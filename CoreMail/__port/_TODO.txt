@@ -1,0 +1,14 @@
+﻿
+There are 2 things yet to do:
+- 1. Implement CMS-Singer
+- 2. Decide what to do with System.Drawing
+
+CoreMail\Luminet_NetStandard\___NetPort\CoreCMSSignedData.cs
+CoreMail\Luminet_NetStandard\___NetPort\NamespaceFix.cs
+
+
+
+System.Drawing.Image
+System.Drawing.Imaging.ImageFormat
+System.Security.Cryptography.Pkcs.CmsSigner
+System.Security.Cryptography.Pkcs.SignedCms
