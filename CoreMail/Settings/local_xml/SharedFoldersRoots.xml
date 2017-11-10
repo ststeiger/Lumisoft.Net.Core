@@ -1,0 +1,21 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <SharedFoldersRoots>
+    <RootID>411c5ed2-d0fc-4b26-b3d6-e35b86eefa76</RootID>
+    <Enabled>false</Enabled>
+    <Folder>Public Limited</Folder>
+    <Description />
+    <RootType>1</RootType>
+    <BoundedUser>test</BoundedUser>
+    <BoundedFolder>inbox/astel</BoundedFolder>
+  </SharedFoldersRoots>
+  <SharedFoldersRoots>
+    <RootID>f5bb4963-6028-4aa2-82e1-7dc54adb97f9</RootID>
+    <Enabled>false</Enabled>
+    <Folder>Users Shared</Folder>
+    <Description />
+    <RootType>2</RootType>
+    <BoundedUser>test</BoundedUser>
+    <BoundedFolder>Inbox</BoundedFolder>
+  </SharedFoldersRoots>
+</NewDataSet>

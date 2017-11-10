@@ -1,0 +1,107 @@
+<?xml version="1.0" standalone="yes"?>
+<dsEvents>
+  <Events>
+    <ID>92114cd6-33a7-44b3-a3aa-8f7993151acf</ID>
+    <VirtualServer />
+    <CreateDate>2016-08-08T16:00:52.5914598+03:00</CreateDate>
+    <Type>0</Type>
+    <Text>String was not recognized as a valid DateTime.
+//------------- function: LumiSoft.MailServer.RecycleBinManager.DoCleanUp()  08.08.2016 16:00.52------------//
+   at LumiSoft.MailServer.Error.DumpError(String virtualServer, Exception x, StackTrace stackTrace)
+   at LumiSoft.MailServer.Error.DumpError(Exception x, StackTrace stackTrace)
+   at LumiSoft.MailServer.RecycleBinManager.DoCleanUp()
+   at LumiSoft.MailServer.RecycleBinManager.m_pTimer_Elapsed(Object sender, ElapsedEventArgs e)
+   at System.Timers.Timer.MyTimerCallback(Object state)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state, Boolean preserveSyncCtx)
+   at System.Threading.ExecutionContext.Run(ExecutionContext executionContext, ContextCallback callback, Object state, Boolean preserveSyncCtx)
+   at System.Threading.TimerQueueTimer.CallCallback()
+   at System.Threading.TimerQueueTimer.Fire()
+   at System.Threading.TimerQueue.FireNextTimers()
+
+//--- Excetption info: -------------------------------------------------
+System.FormatException: String was not recognized as a valid DateTime.
+   at System.DateTimeParse.ParseExact(String s, String format, DateTimeFormatInfo dtfi, DateTimeStyles style)
+   at LumiSoft.MailServer.RecycleBinManager.GetMessagesInfo(String user, DateTime startDate, DateTime endDate) in c:\_Data\LumiSoft\MailServer\ServerAPI\API_xml\RecycleBinManager.cs:line 141
+   at LumiSoft.MailServer.xml_API.GetRecycleBinMessagesInfo(String user, DateTime startDate, DateTime endDate) in c:\_Data\LumiSoft\MailServer\ServerAPI\API_xml\xml_API.cs:line 5647
+   at LumiSoft.MailServer.RecycleBinManager.DoCleanUp() in c:\_Data\LumiSoft\MailServer\MailServer\RecycleBinManager.cs:line 76
+</Text>
+  </Events>
+  <Events>
+    <ID>431b0e0e-e3ad-4f8a-9cc3-3e701fc0ce63</ID>
+    <VirtualServer />
+    <CreateDate>2016-08-08T17:10:28.0900951+03:00</CreateDate>
+    <Type>0</Type>
+    <Text>String was not recognized as a valid DateTime.
+//------------- function: LumiSoft.MailServer.RecycleBinManager.DoCleanUp()  08.08.2016 17:10.28------------//
+   at LumiSoft.MailServer.Error.DumpError(String virtualServer, Exception x, StackTrace stackTrace)
+   at LumiSoft.MailServer.Error.DumpError(Exception x, StackTrace stackTrace)
+   at LumiSoft.MailServer.RecycleBinManager.DoCleanUp()
+   at LumiSoft.MailServer.RecycleBinManager.m_pTimer_Elapsed(Object sender, ElapsedEventArgs e)
+   at System.Timers.Timer.MyTimerCallback(Object state)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state, Boolean preserveSyncCtx)
+   at System.Threading.ExecutionContext.Run(ExecutionContext executionContext, ContextCallback callback, Object state, Boolean preserveSyncCtx)
+   at System.Threading.TimerQueueTimer.CallCallback()
+   at System.Threading.TimerQueueTimer.Fire()
+   at System.Threading.TimerQueue.FireNextTimers()
+
+//--- Excetption info: -------------------------------------------------
+System.FormatException: String was not recognized as a valid DateTime.
+   at System.DateTimeParse.ParseExact(String s, String format, DateTimeFormatInfo dtfi, DateTimeStyles style)
+   at LumiSoft.MailServer.RecycleBinManager.GetMessagesInfo(String user, DateTime startDate, DateTime endDate) in c:\_Data\LumiSoft\MailServer\ServerAPI\API_xml\RecycleBinManager.cs:line 141
+   at LumiSoft.MailServer.xml_API.GetRecycleBinMessagesInfo(String user, DateTime startDate, DateTime endDate) in c:\_Data\LumiSoft\MailServer\ServerAPI\API_xml\xml_API.cs:line 5647
+   at LumiSoft.MailServer.RecycleBinManager.DoCleanUp() in c:\_Data\LumiSoft\MailServer\MailServer\RecycleBinManager.cs:line 76
+</Text>
+  </Events>
+  <Events>
+    <ID>97556b7b-1f3c-4a6f-92ec-f56e28464a5f</ID>
+    <VirtualServer />
+    <CreateDate>2016-08-08T20:18:40.7343137+03:00</CreateDate>
+    <Type>0</Type>
+    <Text>String was not recognized as a valid DateTime.
+//------------- function: LumiSoft.MailServer.RecycleBinManager.DoCleanUp()  08.08.2016 20:18.40------------//
+   at LumiSoft.MailServer.Error.DumpError(String virtualServer, Exception x, StackTrace stackTrace)
+   at LumiSoft.MailServer.Error.DumpError(Exception x, StackTrace stackTrace)
+   at LumiSoft.MailServer.RecycleBinManager.DoCleanUp()
+   at LumiSoft.MailServer.RecycleBinManager.m_pTimer_Elapsed(Object sender, ElapsedEventArgs e)
+   at System.Timers.Timer.MyTimerCallback(Object state)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state, Boolean preserveSyncCtx)
+   at System.Threading.ExecutionContext.Run(ExecutionContext executionContext, ContextCallback callback, Object state, Boolean preserveSyncCtx)
+   at System.Threading.TimerQueueTimer.CallCallback()
+   at System.Threading.TimerQueueTimer.Fire()
+   at System.Threading.TimerQueue.FireNextTimers()
+
+//--- Excetption info: -------------------------------------------------
+System.FormatException: String was not recognized as a valid DateTime.
+   at System.DateTimeParse.ParseExact(String s, String format, DateTimeFormatInfo dtfi, DateTimeStyles style)
+   at LumiSoft.MailServer.RecycleBinManager.GetMessagesInfo(String user, DateTime startDate, DateTime endDate) in c:\_Data\LumiSoft\MailServer\ServerAPI\API_xml\RecycleBinManager.cs:line 141
+   at LumiSoft.MailServer.xml_API.GetRecycleBinMessagesInfo(String user, DateTime startDate, DateTime endDate) in c:\_Data\LumiSoft\MailServer\ServerAPI\API_xml\xml_API.cs:line 5647
+   at LumiSoft.MailServer.RecycleBinManager.DoCleanUp() in c:\_Data\LumiSoft\MailServer\MailServer\RecycleBinManager.cs:line 76
+</Text>
+  </Events>
+  <Events>
+    <ID>773d622b-8808-43ba-9324-ecfc250f9e66</ID>
+    <VirtualServer />
+    <CreateDate>2016-08-08T21:20:27.5647907+03:00</CreateDate>
+    <Type>0</Type>
+    <Text>String was not recognized as a valid DateTime.
+//------------- function: LumiSoft.MailServer.RecycleBinManager.DoCleanUp()  08.08.2016 21:20.27------------//
+   at LumiSoft.MailServer.Error.DumpError(String virtualServer, Exception x, StackTrace stackTrace)
+   at LumiSoft.MailServer.Error.DumpError(Exception x, StackTrace stackTrace)
+   at LumiSoft.MailServer.RecycleBinManager.DoCleanUp()
+   at LumiSoft.MailServer.RecycleBinManager.m_pTimer_Elapsed(Object sender, ElapsedEventArgs e)
+   at System.Timers.Timer.MyTimerCallback(Object state)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state, Boolean preserveSyncCtx)
+   at System.Threading.ExecutionContext.Run(ExecutionContext executionContext, ContextCallback callback, Object state, Boolean preserveSyncCtx)
+   at System.Threading.TimerQueueTimer.CallCallback()
+   at System.Threading.TimerQueueTimer.Fire()
+   at System.Threading.TimerQueue.FireNextTimers()
+
+//--- Excetption info: -------------------------------------------------
+System.FormatException: String was not recognized as a valid DateTime.
+   at System.DateTimeParse.ParseExact(String s, String format, DateTimeFormatInfo dtfi, DateTimeStyles style)
+   at LumiSoft.MailServer.RecycleBinManager.GetMessagesInfo(String user, DateTime startDate, DateTime endDate) in c:\_Data\LumiSoft\MailServer\ServerAPI\API_xml\RecycleBinManager.cs:line 141
+   at LumiSoft.MailServer.xml_API.GetRecycleBinMessagesInfo(String user, DateTime startDate, DateTime endDate) in c:\_Data\LumiSoft\MailServer\ServerAPI\API_xml\xml_API.cs:line 5647
+   at LumiSoft.MailServer.RecycleBinManager.DoCleanUp() in c:\_Data\LumiSoft\MailServer\MailServer\RecycleBinManager.cs:line 76
+</Text>
+  </Events>
+</dsEvents>

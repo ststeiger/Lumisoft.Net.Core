@@ -1,0 +1,10 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <MailingLists>
+    <MailingListID>dbef0062-3da1-4b62-8bb6-d60899b67540</MailingListID>
+    <DomainName />
+    <MailingListName>list@test.lumisoft.ee</MailingListName>
+    <Description>Test list</Description>
+    <Enabled>True</Enabled>
+  </MailingLists>
+</NewDataSet>

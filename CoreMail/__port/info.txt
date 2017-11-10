@@ -1,0 +1,84 @@
+﻿
+The .NET Standard 2.0 specification is now complete. 
+It is supported in .NET Core 2.0, in the .NET Framework 4.6.1
+
+
+What has been done to port: 
+
+
+Remove
+CoreMail\LumiNet_Standard\RTP\Debug\wfrm_RTP_Debug.cs
+CoreMail\LumiNet_45\SIP\Debug\wfrm_SIP_Debug.cs
+
+Removed 
+CoreMail\Luminet_NetStandard\RTP\Debug\wfrm_RTP_Debug.cs
+
+
+Removed 
+//////////////////////////using System.Runtime.Remoting.Messaging;
+CoreMail\Luminet_NetStandard\TCP\TCP_Client.cs
+
+
+
+
+ServerAPI
+Removed UI folder, Removed System.Web
+
+
+// FIXME: 
+Removed FORM from ISettingsUI, replaced with "string"
+CoreMail\ServerAPI\Filters\ISettingsUI.cs
+
+
+Modifications in RtfToHtml & vv
+CoreMail\CoreMail\SCore.cs
+Replaced with RtfPipe & BracketPipe 
+https://github.com/erdomke/RtfPipe
+https://github.com/erdomke/BracketPipe/
+string output = RtfPipe.Rtf.ToHtml(rtf);
+
+
+Modifications in LDAP-Auth:
+CoreMail\CoreMail\VirtualServer.cs
+
+
+CoreMail\CoreMail\Error.cs
+public static void DumpError(string virtualServer,Exception x,StackTrace stackTrace)
+// Removed SqlClient
+
+
+
+LumiCore\MailServerManager\Resources\ResManager.cs
+GetResourceName
+GetImage
+GetIcon(string iconName,Size size)
+
+
+
+Debug\Settings\RecentConnections.txt
+
+
+Warning:  XML-API must have correct name... (defined in settings XML)
+
+CoreMail\CoreMail\Server.cs
+IMailServerApi api = LoadApi(assembly, apiClass, intiStr);
+
+
+\CoreMail\xml_API_NetStandard\_fix_SqliteDataAdapter.cs
+
+
+
+
+Message: -ERR Specified virtual server with ID '2542dg' doesn't exist !
+Method: LumiSoft.MailServer.UI.wfrm_System_General.LoadData()
+
+Stack:
+   bei LumiSoft.MailServer.API.UserAPI.System_Settings.Bind() 
+in LumiCore\UserAPI\System_Settings.cs:Zeile 1050.
+
+   bei LumiSoft.MailServer.API.UserAPI.System_Settings..ctor(VirtualServer virtualServer) 
+in LumiCore\UserAPI\System_Settings.cs:Zeile 40.
+
+   bei LumiSoft.MailServer.API.UserAPI.VirtualServer.get_SystemSettings() 
+in LumiCore\UserAPI\VirtualServer.cs:Zeile 1026.
+   bei LumiSoft.MailServer.UI.wfrm_System_General.LoadData()

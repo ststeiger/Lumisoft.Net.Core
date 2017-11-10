@@ -1,0 +1,7 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <RecycleBinSettings>
+    <DeleteToRecycleBin>true</DeleteToRecycleBin>
+    <DeleteMessagesAfter>7</DeleteMessagesAfter>
+  </RecycleBinSettings>
+</NewDataSet>

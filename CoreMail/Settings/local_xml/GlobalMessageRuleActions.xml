@@ -1,0 +1,213 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <GlobalMessageRuleActions>
+    <RuleID>1e32901a-2f08-4a6d-b7ab-b625d3b228cd</RuleID>
+    <ActionID>46f73e49-32d3-4b7d-806f-a45b104dd7aa</ActionID>
+    <Description>test auto</Description>
+    <ActionType>1</ActionType>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQoJPEZyb20+bWVYQGVlLmVlPC9Gcm9tPg0KCTxNZXNzYWdlPk1lc3NhZ2UtSUQ6ICZsdDtmZTFmOGM0ZWYxY2M0ZWMyOWEzYjAwMjgyZThkNTFhOUA3OGU3OTU2MDQyYzc0YWE1ODJiMjU2YzcwMmFkOTk3MyZndDsNCkRhdGU6IFRodSwgMzEgQXVnIDIwMDYgMDY6MTY6NDkgR01UDQpNaW1lLVZlcnNpb246IDEuMA0KRnJvbTogJmx0O3Bvc3RtYXN0ZXJAdGVzdC5sdW1pc29mdC5lZSZndDsNClRvOiANClN1YmplY3Q6IEF1dG8gUmVzcG9uc2U6ICNTVUJKRUNUDQpDb250ZW50LVR5cGU6IHRleHQvcGxhaW47IGNoYXJzZXQ9InV0Zi04Ig0KQ29udGVudC1UcmFuc2Zlci1FbmNvZGluZzogcXVvdGVkLXByaW50YWJsZQ0KDQo9MEQ9MEFIaSw9MEQ9MEE9MEQ9MEFUaGlzPTIwaXM9MjBhdXRvPTIwcmVzcG9uc2U9MjBtZXNzYWdlPTIwdGV4dC48L01lc3NhZ2U+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>ed02db6c-5975-4671-8931-ef2e18c0c17b</RuleID>
+    <ActionID>068d1f7d-114b-49e7-8b18-3be3fb084e7e</ActionID>
+    <Description>test action update</Description>
+    <ActionType>2</ActionType>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>ed02db6c-5975-4671-8931-ef2e18c0c17b</RuleID>
+    <ActionID>78a71c00-af21-425e-b86b-ef117b607865</ActionID>
+    <Description>x</Description>
+    <ActionType>9</ActionType>
+    <ActionData>PEFjdGlvbkRhdGE+DQoJPEhlYWRlckZpZWxkTmFtZT5mPC9IZWFkZXJGaWVsZE5hbWU+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>2bfea7a5-2abc-4b0b-b169-fbc1dca6dfa4</RuleID>
+    <ActionID>1710909a-a64e-4fe4-aaa2-495e421ad322</ActionID>
+    <Description>fw</Description>
+    <ActionType>3</ActionType>
+    <ActionData>PEFjdGlvbkRhdGE+DQoJPEVtYWlsPml2YXIuZndAbHVtaXNvZnQuZWU8L0VtYWlsPg0KPC9BY3Rpb25EYXRhPg==</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>2bfea7a5-2abc-4b0b-b169-fbc1dca6dfa4</RuleID>
+    <ActionID>d166307f-4451-4a6d-94fa-728870f11982</ActionID>
+    <Description>ww</Description>
+    <ActionType>2</ActionType>
+    <ActionData>PEFjdGlvbkRhdGE+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>b1cad9f6-bfa4-45ab-b72c-d7b77059badc</RuleID>
+    <ActionID>f6312f5a-955a-4fdf-a89a-709df8db63a9</ActionID>
+    <Description>Add header field X-Test: "test"</Description>
+    <ActionType>8</ActionType>
+    <ActionData>PEFjdGlvbkRhdGE+DQoJPEhlYWRlckZpZWxkTmFtZT5YLVRlc3Q6PC9IZWFkZXJGaWVsZE5hbWU+DQoJPEhlYWRlckZpZWxkVmFsdWU+InRlc3QiPC9IZWFkZXJGaWVsZFZhbHVlPg0KPC9BY3Rpb25EYXRhPg==</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>98d71ae8-0311-4c86-ae94-464b8996b0ce</RuleID>
+    <ActionID>5d129031-34d5-4fa8-b3a9-d437e074afde</ActionID>
+    <Description>Remove Header Field: X-Priority:</Description>
+    <ActionType>9</ActionType>
+    <ActionData>PEFjdGlvbkRhdGE+DQoJPEhlYWRlckZpZWxkTmFtZT5YLVByaW9yaXR5OjwvSGVhZGVyRmllbGROYW1lPg0KPC9BY3Rpb25EYXRhPg==</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>aad6826f-20ef-4a92-a35a-9d048f387354</RuleID>
+    <ActionID>bd9e1c59-8629-4532-8368-e24b04487fd3</ActionID>
+    <Description>send error to connected SMTP client</Description>
+    <ActionType>10</ActionType>
+    <ActionData>PEFjdGlvbkRhdGE+DQoJPEVycm9yVGV4dD5laGVlLCBpJ20gYmxvY2tpbmcgeW91PC9FcnJvclRleHQ+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>8164debb-343d-4d6d-a739-21b9751b2a5d</RuleID>
+    <ActionID>937735ec-d9e5-420e-ae39-294115c9522e</ActionID>
+    <Description>store copy of message to specified ftp folder</Description>
+    <ActionType>11</ActionType>
+    <ActionData>PEFjdGlvbkRhdGE+DQoJPFBvcnQ+MjE8L1BvcnQ+DQoJPEZvbGRlciAvPg0KCTxTZXJ2ZXI+ZnRwLmx1bWlzb2Z0LmVlPC9TZXJ2ZXI+DQoJPFVzZXI+dG1wZnRwPC9Vc2VyPg0KCTxQYXNzd29yZD50bXBmdHA8L1Bhc3N3b3JkPg0KPC9BY3Rpb25EYXRhPg==</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>e295bfdf-5397-43d7-9461-dd6f85aa8657</RuleID>
+    <ActionID>980e50e5-2220-4628-ad85-8c6a6dfdf0ee</ActionID>
+    <Description>store to specified FTP folder</Description>
+    <ActionType>11</ActionType>
+    <ActionData>PEFjdGlvbkRhdGE+DQoJPFBvcnQ+MjE8L1BvcnQ+DQoJPEZvbGRlciAvPg0KCTxTZXJ2ZXI+ZnRwLmx1bWlzb2Z0LmVlPC9TZXJ2ZXI+DQoJPFVzZXI+dG1wZnRwPC9Vc2VyPg0KCTxQYXNzd29yZD50bXBmdHA8L1Bhc3N3b3JkPg0KPC9BY3Rpb25EYXRhPg==</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>9cf3d90a-3406-4245-8b69-8622428009a8</RuleID>
+    <ActionID>be43cca9-3c56-4bd5-9252-c06ed2d9a324</ActionID>
+    <Description>xxx</Description>
+    <ActionType>3</ActionType>
+    <ActionData>PEFjdGlvbkRhdGE+DQoJPEVtYWlsPnh4eHg8L0VtYWlsPg0KPC9BY3Rpb25EYXRhPg==</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>b3044066-194a-4a41-9335-6d044d821273</RuleID>
+    <ActionID>a8f262a7-efce-4871-ac5a-8e376a3f1099</ActionID>
+    <Description>ssf</Description>
+    <ActionType>3</ActionType>
+    <ActionData>PEFjdGlvbkRhdGE+DQoJPEVtYWlsPnNmZnM8L0VtYWlsPg0KPC9BY3Rpb25EYXRhPg==</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>e8cee0ba-fce8-446c-b9ca-22d98925f8c4</RuleID>
+    <ActionID>0ee48d70-6ecd-4ad9-9e7c-9bf978e0c86c</ActionID>
+    <Description>store copy of message to NNTP newgroup</Description>
+    <ActionType>12</ActionType>
+    <ActionData>PEFjdGlvbkRhdGE+DQoJPFBvcnQ+MTE5PC9Qb3J0Pg0KCTxGb2xkZXI+bWFpbHNlcnZlci5nZW5lcmFsPC9Gb2xkZXI+DQoJPFNlcnZlcj5sc3d3dzwvU2VydmVyPg0KCTxVc2VyIC8+DQoJPFBhc3N3b3JkIC8+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>8ff05715-e52e-4a30-8d19-38921988051c</RuleID>
+    <ActionID>ee0b72a0-37ec-49e5-b504-6a0b7498600d</ActionID>
+    <Description>Post message to NNTP newsgroup</Description>
+    <ActionType>12</ActionType>
+    <ActionData>PEFjdGlvbkRhdGE+DQoJPFBvcnQ+MTE5PC9Qb3J0Pg0KCTxTZXJ2ZXI+bHN3d3c8L1NlcnZlcj4NCgk8TmV3c2dyb3VwPm1haWxzZXJ2ZXIuZ2VuZXJhbDwvTmV3c2dyb3VwPg0KCTxVc2VyIC8+DQoJPFBhc3N3b3JkIC8+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>c71e5cc5-fa74-4241-9298-fffc71ccac6d</RuleID>
+    <ActionID>038604d6-b5be-435b-9907-5ba4eefb1611</ActionID>
+    <Description>post message to specified web page</Description>
+    <ActionType>13</ActionType>
+    <ActionData>PEFjdGlvbkRhdGE+DQoJPEZpbGVOYW1lIC8+DQoJPFVSTD5odHRwOi8vaXZ4L3Rlc3R1cC91cGxvYWQuYXNweDwvVVJMPg0KPC9BY3Rpb25EYXRhPg==</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>89866efc-0dba-4cd9-8002-201629843716</RuleID>
+    <ActionID>f4467230-6a8c-442a-92f0-64bbf8b6d474</ActionID>
+    <Description>xx</Description>
+    <ActionType>4</ActionType>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQoJPEhvc3Q+bHN3d3c8L0hvc3Q+DQoJPFBvcnQ+MjU8L1BvcnQ+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>9fe7b047-f993-4b27-82da-bb9af1ff833c</RuleID>
+    <ActionID>c74bffc3-038c-4fe6-81ea-6357f60bddfe</ActionID>
+    <Description>Forward all emails to ivx@lumisoft.ee</Description>
+    <ActionType>3</ActionType>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQoJPEVtYWlsPml2eEBsdW1pc29mdC5lZTwvRW1haWw+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>be22d625-04de-4919-a93f-92da45dcf1fc</RuleID>
+    <ActionID>068d1f7d-114b-49e7-8b18-3be3fb084e7e</ActionID>
+    <Description>test action update</Description>
+    <ActionType>2</ActionType>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>be22d625-04de-4919-a93f-92da45dcf1fc</RuleID>
+    <ActionID>78a71c00-af21-425e-b86b-ef117b607865</ActionID>
+    <Description>x</Description>
+    <ActionType>9</ActionType>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQoJPEhlYWRlckZpZWxkTmFtZT5mPC9IZWFkZXJGaWVsZE5hbWU+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>fcbda2ec-0f8b-4ffb-9ff1-8fc267ec4c2d</RuleID>
+    <ActionID>1710909a-a64e-4fe4-aaa2-495e421ad322</ActionID>
+    <Description>fw</Description>
+    <ActionType>3</ActionType>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQoJPEVtYWlsPml2YXIuZndAbHVtaXNvZnQuZWU8L0VtYWlsPg0KPC9BY3Rpb25EYXRhPg==</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>fcbda2ec-0f8b-4ffb-9ff1-8fc267ec4c2d</RuleID>
+    <ActionID>d166307f-4451-4a6d-94fa-728870f11982</ActionID>
+    <Description>ww</Description>
+    <ActionType>2</ActionType>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>118b7612-288b-484b-aa8b-3722ccfb45f1</RuleID>
+    <ActionID>46f73e49-32d3-4b7d-806f-a45b104dd7aa</ActionID>
+    <Description>test auto</Description>
+    <ActionType>1</ActionType>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQoJPEZyb20+bWVYQGVlLmVlPC9Gcm9tPg0KCTxNZXNzYWdlPk1lc3NhZ2UtSUQ6ICZsdDtmZTFmOGM0ZWYxY2M0ZWMyOWEzYjAwMjgyZThkNTFhOUA3OGU3OTU2MDQyYzc0YWE1ODJiMjU2YzcwMmFkOTk3MyZndDsNCkRhdGU6IFRodSwgMzEgQXVnIDIwMDYgMDY6MTY6NDkgR01UDQpNaW1lLVZlcnNpb246IDEuMA0KRnJvbTogJmx0O3Bvc3RtYXN0ZXJAdGVzdC5sdW1pc29mdC5lZSZndDsNClRvOiANClN1YmplY3Q6IEF1dG8gUmVzcG9uc2U6ICNTVUJKRUNUDQpDb250ZW50LVR5cGU6IHRleHQvcGxhaW47IGNoYXJzZXQ9InV0Zi04Ig0KQ29udGVudC1UcmFuc2Zlci1FbmNvZGluZzogcXVvdGVkLXByaW50YWJsZQ0KDQo9MEQ9MEFIaSw9MEQ9MEE9MEQ9MEFUaGlzPTIwaXM9MjBhdXRvPTIwcmVzcG9uc2U9MjBtZXNzYWdlPTIwdGV4dC48L01lc3NhZ2U+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>3fba0759-b27f-4761-879b-9d5779244511</RuleID>
+    <ActionID>f6312f5a-955a-4fdf-a89a-709df8db63a9</ActionID>
+    <Description>Add header field X-Test: "test"</Description>
+    <ActionType>8</ActionType>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQoJPEhlYWRlckZpZWxkTmFtZT5YLVRlc3Q6PC9IZWFkZXJGaWVsZE5hbWU+DQoJPEhlYWRlckZpZWxkVmFsdWU+InRlc3QiPC9IZWFkZXJGaWVsZFZhbHVlPg0KPC9BY3Rpb25EYXRhPg==</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>cb466e84-4b0a-4959-a2f5-d915b23bd48c</RuleID>
+    <ActionID>5d129031-34d5-4fa8-b3a9-d437e074afde</ActionID>
+    <Description>Remove Header Field: X-Priority:</Description>
+    <ActionType>9</ActionType>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQoJPEhlYWRlckZpZWxkTmFtZT5YLVByaW9yaXR5OjwvSGVhZGVyRmllbGROYW1lPg0KPC9BY3Rpb25EYXRhPg==</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>2c98f175-9b67-4668-b0ee-b88ce4756346</RuleID>
+    <ActionID>bd9e1c59-8629-4532-8368-e24b04487fd3</ActionID>
+    <Description>send error to connected SMTP client</Description>
+    <ActionType>10</ActionType>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQoJPEVycm9yVGV4dD5laGVlLCBpJ20gYmxvY2tpbmcgeW91PC9FcnJvclRleHQ+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>e217a3af-8f15-4c1a-8001-629532d5664c</RuleID>
+    <ActionID>980e50e5-2220-4628-ad85-8c6a6dfdf0ee</ActionID>
+    <Description>store to specified FTP folder</Description>
+    <ActionType>11</ActionType>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQoJPFBvcnQ+MjE8L1BvcnQ+DQoJPEZvbGRlciAvPg0KCTxTZXJ2ZXI+ZnRwLmx1bWlzb2Z0LmVlPC9TZXJ2ZXI+DQoJPFVzZXI+dG1wZnRwPC9Vc2VyPg0KCTxQYXNzd29yZD50bXBmdHA8L1Bhc3N3b3JkPg0KPC9BY3Rpb25EYXRhPg==</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>48aafcc9-0407-4968-bd32-5ec2cbc1a5ed</RuleID>
+    <ActionID>ee0b72a0-37ec-49e5-b504-6a0b7498600d</ActionID>
+    <Description>Post message to NNTP newsgroup</Description>
+    <ActionType>12</ActionType>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQoJPFBvcnQ+MTE5PC9Qb3J0Pg0KCTxTZXJ2ZXI+bHN3d3c8L1NlcnZlcj4NCgk8TmV3c2dyb3VwPm1haWxzZXJ2ZXIuZ2VuZXJhbDwvTmV3c2dyb3VwPg0KCTxVc2VyIC8+DQoJPFBhc3N3b3JkIC8+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>8fc175d0-441b-4c63-a449-4c7c84a5f72b</RuleID>
+    <ActionID>038604d6-b5be-435b-9907-5ba4eefb1611</ActionID>
+    <Description>post message to specified web page</Description>
+    <ActionType>13</ActionType>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQoJPEZpbGVOYW1lIC8+DQoJPFVSTD5odHRwOi8vaXZ4L3Rlc3R1cC91cGxvYWQuYXNweDwvVVJMPg0KPC9BY3Rpb25EYXRhPg==</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>4bbaf6b0-fd8a-4845-a89e-af31136e576a</RuleID>
+    <ActionID>f4467230-6a8c-442a-92f0-64bbf8b6d474</ActionID>
+    <Description>xx</Description>
+    <ActionType>4</ActionType>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQoJPEhvc3Q+bHN3d3c8L0hvc3Q+DQoJPFBvcnQ+MjU8L1BvcnQ+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </GlobalMessageRuleActions>
+  <GlobalMessageRuleActions>
+    <RuleID>1db81731-62d1-4670-92d7-b89f17d5fd8a</RuleID>
+    <ActionID>c74bffc3-038c-4fe6-81ea-6357f60bddfe</ActionID>
+    <Description>Forward all emails to ivx@lumisoft.ee</Description>
+    <ActionType>3</ActionType>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQoJPEVtYWlsPml2eEBsdW1pc29mdC5lZTwvRW1haWw+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </GlobalMessageRuleActions>
+</NewDataSet>

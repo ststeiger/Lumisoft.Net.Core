@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <Groups>
+    <GroupID>725a6fd0-ff44-4211-a473-f0f2dc159102</GroupID>
+    <GroupName>test group</GroupName>
+    <Description>some group</Description>
+    <Enabled>True</Enabled>
+  </Groups>
+  <Groups>
+    <GroupID>fb6509ff-3974-42d2-9eda-6196fb1db35b</GroupID>
+    <GroupName>xxxx</GroupName>
+    <Description>dec aaaaa</Description>
+    <Enabled>False</Enabled>
+  </Groups>
+</NewDataSet>

@@ -1,0 +1,179 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <GlobalMessageRules>
+    <RuleID>ed02db6c-5975-4671-8931-ef2e18c0c17b</RuleID>
+    <Cost>632757097508281250</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test xxxxx</Description>
+    <MatchExpression>sys.Date == "2006.02.23" </MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>2bfea7a5-2abc-4b0b-b169-fbc1dca6dfa4</RuleID>
+    <Cost>632757090237343750</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test2 </Description>
+    <MatchExpression>Date == "2006.02.23"</MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>1e32901a-2f08-4a6d-b7ab-b625d3b228cd</RuleID>
+    <Cost>1</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test auto response</Description>
+    <MatchExpression>sys.date != "2006.02.23"</MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>b1cad9f6-bfa4-45ab-b72c-d7b77059badc</RuleID>
+    <Cost>632761115114145579</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test6 -&gt; Add header field X-Test: "test"</Description>
+    <MatchExpression>sys.date == "2006.02.23"</MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>98d71ae8-0311-4c86-ae94-464b8996b0ce</RuleID>
+    <Cost>632761118556020579</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test 7 Remove Header Field: X-Priority:</Description>
+    <MatchExpression>sys.Date == "2006.02.23"</MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>aad6826f-20ef-4a92-a35a-9d048f387354</RuleID>
+    <Cost>632761365334843750</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test Error To Client</Description>
+    <MatchExpression>smtp.mail_from * "*" </MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>e295bfdf-5397-43d7-9461-dd6f85aa8657</RuleID>
+    <Cost>632761544054218750</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test store to FTP</Description>
+    <MatchExpression>smtp.mail_from * "*" </MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>8ff05715-e52e-4a30-8d19-38921988051c</RuleID>
+    <Cost>0</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test store to NNTP newsgroup</Description>
+    <MatchExpression>smtp.mail_from * "*"</MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>c71e5cc5-fa74-4241-9298-fffc71ccac6d</RuleID>
+    <Cost>0</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test HTTP post</Description>
+    <MatchExpression>smtp.mail_from * "*"</MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>89866efc-0dba-4cd9-8002-201629843716</RuleID>
+    <Cost>0</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>Forward to host test</Description>
+    <MatchExpression>smtp.mail_from * ""</MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>9fe7b047-f993-4b27-82da-bb9af1ff833c</RuleID>
+    <Cost>0</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>Forward to Email</Description>
+    <MatchExpression>smtp.rcpt_to * "*@test.lumisoft.ee"</MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>be22d625-04de-4919-a93f-92da45dcf1fc</RuleID>
+    <Cost>632931458279843750</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test xxxxx</Description>
+    <MatchExpression>sys.Date == "2006.02.23" </MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>fcbda2ec-0f8b-4ffb-9ff1-8fc267ec4c2d</RuleID>
+    <Cost>632931458280468750</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test2 </Description>
+    <MatchExpression>Date == "2006.02.23"</MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>118b7612-288b-484b-aa8b-3722ccfb45f1</RuleID>
+    <Cost>632931458280781250</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test auto response</Description>
+    <MatchExpression>sys.date != "2006.02.23"</MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>3fba0759-b27f-4761-879b-9d5779244511</RuleID>
+    <Cost>632931458280937500</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test6 -&gt; Add header field X-Test: "test"</Description>
+    <MatchExpression>sys.date == "2006.02.23"</MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>cb466e84-4b0a-4959-a2f5-d915b23bd48c</RuleID>
+    <Cost>632931458281093750</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test 7 Remove Header Field: X-Priority:</Description>
+    <MatchExpression>sys.Date == "2006.02.23"</MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>2c98f175-9b67-4668-b0ee-b88ce4756346</RuleID>
+    <Cost>632931458281250000</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test Error To Client</Description>
+    <MatchExpression>smtp.mail_from * "*" </MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>e217a3af-8f15-4c1a-8001-629532d5664c</RuleID>
+    <Cost>632931458281406250</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test store to FTP</Description>
+    <MatchExpression>smtp.mail_from * "*" </MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>48aafcc9-0407-4968-bd32-5ec2cbc1a5ed</RuleID>
+    <Cost>632931458281562500</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test store to NNTP newsgroup</Description>
+    <MatchExpression>smtp.mail_from * "*"</MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>8fc175d0-441b-4c63-a449-4c7c84a5f72b</RuleID>
+    <Cost>632931458281718750</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test HTTP post</Description>
+    <MatchExpression>smtp.mail_from * "*"</MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>4bbaf6b0-fd8a-4845-a89e-af31136e576a</RuleID>
+    <Cost>632931458281875000</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>Forward to host test</Description>
+    <MatchExpression>smtp.mail_from * "*"</MatchExpression>
+  </GlobalMessageRules>
+  <GlobalMessageRules>
+    <RuleID>1db81731-62d1-4670-92d7-b89f17d5fd8a</RuleID>
+    <Cost>632931458282187500</Cost>
+    <Enabled>false</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>Forward to Email</Description>
+    <MatchExpression>smtp.rcpt_to * "*@test.lumisoft.ee"</MatchExpression>
+  </GlobalMessageRules>
+</NewDataSet>

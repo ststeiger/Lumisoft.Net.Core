@@ -1,0 +1,33 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <ACL>
+    <Folder>test/Inbox</Folder>
+    <User>publicfolders</User>
+    <Permissions>c</Permissions>
+  </ACL>
+  <ACL>
+    <Folder>test/Inbox</Folder>
+    <User>test group</User>
+    <Permissions>lrswipcda</Permissions>
+  </ACL>
+  <ACL>
+    <Folder>test/Trash/Public Folders</Folder>
+    <User>test group</User>
+    <Permissions>lrswipcd</Permissions>
+  </ACL>
+  <ACL>
+    <Folder>qqqq/Inbox</Folder>
+    <User>xxx</User>
+    <Permissions>lrswipcd</Permissions>
+  </ACL>
+  <ACL>
+    <Folder>qqqq/Inbox</Folder>
+    <User>we</User>
+    <Permissions>lrswipcd</Permissions>
+  </ACL>
+  <ACL>
+    <Folder>test/Entwürfe</Folder>
+    <User>publicfolders</User>
+    <Permissions>lwc</Permissions>
+  </ACL>
+</NewDataSet>

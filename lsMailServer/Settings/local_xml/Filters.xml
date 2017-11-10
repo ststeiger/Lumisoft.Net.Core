@@ -1,0 +1,21 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <SmtpFilters>
+    <FilterID>f79f9c12-355d-4a28-bb2b-67859a5a4858</FilterID>
+    <Cost>632842601705625000</Cost>
+    <Assembly>lsDNSBL_Filter.exe</Assembly>
+    <ClassName>LumiSoft.MailServer.lsDNSBL_Filter</ClassName>
+    <Enabled>true</Enabled>
+    <Description>DNSBL filter</Description>
+    <Type>ISmtpSenderFilter</Type>
+  </SmtpFilters>
+  <SmtpFilters>
+    <FilterID>d2a70484-6ba4-4620-960b-67f98ebc78da</FilterID>
+    <Cost>632842603575156250</Cost>
+    <Assembly>lsVirusFilter.exe</Assembly>
+    <ClassName>LumiSoft.MailServer.lsVirusFilter</ClassName>
+    <Enabled>false</Enabled>
+    <Description>Virus scanner filter</Description>
+    <Type>ISmtpMessageFilter</Type>
+  </SmtpFilters>
+</NewDataSet>

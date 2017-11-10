@@ -1,0 +1,11 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <UsersDefaultFolders>
+    <FolderName>Inbox</FolderName>
+    <Permanent>true</Permanent>
+  </UsersDefaultFolders>
+  <UsersDefaultFolders>
+    <FolderName>Spam</FolderName>
+    <Permanent>false</Permanent>
+  </UsersDefaultFolders>
+</NewDataSet>

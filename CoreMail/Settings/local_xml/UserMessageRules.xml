@@ -1,0 +1,13 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <UserMessageRules>
+    <UserID>0369d549-82bd-41b7-912f-6c11ac85f7ba</UserID>
+    <RuleID>26e1780d-ea85-49ce-838d-4ae5c185190f</RuleID>
+    <Cost>632905770546093750</Cost>
+    <Enabled>true</Enabled>
+    <CheckNextRuleIf>0</CheckNextRuleIf>
+    <Description>test X</Description>
+    <MatchExpression>sys.date != "01.01.2006"
+</MatchExpression>
+  </UserMessageRules>
+</NewDataSet>

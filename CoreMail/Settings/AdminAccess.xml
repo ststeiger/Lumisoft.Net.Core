@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <IP_Access>
+    <StartIP>127.0.0.1</StartIP>
+    <EndIP>127.0.0.1</EndIP>
+  </IP_Access>
+  <IP_Access>
+    <StartIP>::1</StartIP>
+    <EndIP>::1</EndIP>
+  </IP_Access>
+  <Users>
+    <UserName>Administrator</UserName>
+    <Password></Password>
+  </Users>
+</NewDataSet>

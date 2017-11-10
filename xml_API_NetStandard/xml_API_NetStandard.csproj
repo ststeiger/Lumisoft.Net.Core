@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="ffffffffff.cs" />
+    <Compile Remove="gggggg.cs" />
+    <Compile Remove="xxxxxbase.cs" />
+    <Compile Remove="_garbage_MSFIX\ffffffffff.cs" />
+    <Compile Remove="_garbage_MSFIX\gggggg.cs" />
+    <Compile Remove="_garbage_MSFIX\xxxxxbase.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Luminet_NetStandard\Luminet_NetStandard.csproj" />
+    <ProjectReference Include="..\Mono.Data.Sqlite\Mono.Data.Sqlite.csproj" />
+    <ProjectReference Include="..\ServerApiStandard\ServerApiStandard.csproj" />
+  </ItemGroup>
+
+</Project>

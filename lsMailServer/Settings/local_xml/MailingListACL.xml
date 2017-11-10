@@ -1,0 +1,71 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <ACL>
+    <MailingListID>415cc8c7-0a78-4fe8-a6fa-ec7ba2c8b503</MailingListID>
+    <UserOrGroup>anyone</UserOrGroup>
+  </ACL>
+  <ACL>
+    <MailingListID>e6c7837a-d21a-4995-91b3-ebad16803891</MailingListID>
+    <UserOrGroup>anyone</UserOrGroup>
+  </ACL>
+  <ACL>
+    <MailingListID>4ee24dc8-1d14-465c-aa16-2d26e5408143</MailingListID>
+    <UserOrGroup>Authenticated Users</UserOrGroup>
+  </ACL>
+  <ACL>
+    <MailingListID>619f32be-2331-4cbc-982b-10ec55e69c2b</MailingListID>
+    <UserOrGroup>anyone</UserOrGroup>
+  </ACL>
+  <ACL>
+    <MailingListID>cf482a13-a2c4-44eb-a72e-5e70a4001b80</MailingListID>
+    <UserOrGroup>anyone</UserOrGroup>
+  </ACL>
+  <ACL>
+    <MailingListID>30afdd84-cf7d-4c29-a9b8-ab4845f997f6</MailingListID>
+    <UserOrGroup>Authenticated Users</UserOrGroup>
+  </ACL>
+  <ACL>
+    <MailingListID>cce671d4-8660-4409-88fc-d2c58b37175b</MailingListID>
+    <UserOrGroup>anyone</UserOrGroup>
+  </ACL>
+  <ACL>
+    <MailingListID>e76db16d-8ff7-4c00-8312-02840792d7d1</MailingListID>
+    <UserOrGroup>anyone</UserOrGroup>
+  </ACL>
+  <ACL>
+    <MailingListID>952637d4-e369-4652-812d-fe81f63ada19</MailingListID>
+    <UserOrGroup>Authenticated Users</UserOrGroup>
+  </ACL>
+  <ACL>
+    <MailingListID>5e1b163e-f328-4579-ad18-02c0782cb23a</MailingListID>
+    <UserOrGroup>anyone</UserOrGroup>
+  </ACL>
+  <ACL>
+    <MailingListID>7d95edac-8064-44df-8faf-286921bb33bd</MailingListID>
+    <UserOrGroup>anyone</UserOrGroup>
+  </ACL>
+  <ACL>
+    <MailingListID>0c08246c-45fc-4ba5-8705-016e00bdc17f</MailingListID>
+    <UserOrGroup>Authenticated Users</UserOrGroup>
+  </ACL>
+  <ACL>
+    <MailingListID>8f58625b-8e0b-4196-9b32-4fdc01615f83</MailingListID>
+    <UserOrGroup>anyone</UserOrGroup>
+  </ACL>
+  <ACL>
+    <MailingListID>ac4e5a86-6e70-429e-b76a-bd7d30825bc4</MailingListID>
+    <UserOrGroup>anyone</UserOrGroup>
+  </ACL>
+  <ACL>
+    <MailingListID>d46d70fa-9af2-4161-8ea7-a664d6f0fa46</MailingListID>
+    <UserOrGroup>Authenticated Users</UserOrGroup>
+  </ACL>
+  <ACL>
+    <MailingListID>f9f35189-193f-448f-a1d7-559aaa5e44a6</MailingListID>
+    <UserOrGroup>anyone</UserOrGroup>
+  </ACL>
+  <ACL>
+    <MailingListID>dbef0062-3da1-4b62-8bb6-d60899b67540</MailingListID>
+    <UserOrGroup>anyone</UserOrGroup>
+  </ACL>
+</NewDataSet>

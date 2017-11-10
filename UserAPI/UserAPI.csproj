@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{52089F64-5487-4105-9D90-A9640878F3CE}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>UserAPI</RootNamespace>
+    <AssemblyName>UserAPI</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Auth_Settings.cs" />
+    <Compile Include="ConvertEx.cs" />
+    <Compile Include="Domain.cs" />
+    <Compile Include="DomainCollection.cs" />
+    <Compile Include="Event.cs" />
+    <Compile Include="EventCollection.cs" />
+    <Compile Include="EventType_enum.cs" />
+    <Compile Include="FetchMessages_Settings.cs" />
+    <Compile Include="Filter.cs" />
+    <Compile Include="FilterCollection.cs" />
+    <Compile Include="GlobalMessageRule.cs" />
+    <Compile Include="GlobalMessageRuleActionBase.cs" />
+    <Compile Include="GlobalMessageRuleActionCollection.cs" />
+    <Compile Include="GlobalMessageRuleAction_AddHeaderField.cs" />
+    <Compile Include="GlobalMessageRuleAction_AutoResponse.cs" />
+    <Compile Include="GlobalMessageRuleAction_DeleteMessage.cs" />
+    <Compile Include="GlobalMessageRuleAction_enum.cs" />
+    <Compile Include="GlobalMessageRuleAction_ExecuteProgram.cs" />
+    <Compile Include="GlobalMessageRuleAction_ForwardToEmail.cs" />
+    <Compile Include="GlobalMessageRuleAction_ForwardToHost.cs" />
+    <Compile Include="GlobalMessageRuleAction_MoveToImapFolder.cs" />
+    <Compile Include="GlobalMessageRuleAction_PostToHttp.cs" />
+    <Compile Include="GlobalMessageRuleAction_PostToNntpNewsgroup.cs" />
+    <Compile Include="GlobalMessageRuleAction_RemoveHeaderField.cs" />
+    <Compile Include="GlobalMessageRuleAction_SendError.cs" />
+    <Compile Include="GlobalMessageRuleAction_StoreToDiskFolder.cs" />
+    <Compile Include="GlobalMessageRuleAction_StoreToFtp.cs" />
+    <Compile Include="GlobalMessageRuleCollection.cs" />
+    <Compile Include="GlobalMessageRule_CheckNextRule_enum.cs" />
+    <Compile Include="Group.cs" />
+    <Compile Include="GroupCollection.cs" />
+    <Compile Include="GroupMemberCollection.cs" />
+    <Compile Include="IMAP_Settings.cs" />
+    <Compile Include="IPSecurity.cs" />
+    <Compile Include="IPSecurityAction_enum.cs" />
+    <Compile Include="IPSecurityCollection.cs" />
+    <Compile Include="Logging_Settings.cs" />
+    <Compile Include="Logs.cs" />
+    <Compile Include="LogSession.cs" />
+    <Compile Include="MailingList.cs" />
+    <Compile Include="MailingListAclCollection.cs" />
+    <Compile Include="MailingListCollection.cs" />
+    <Compile Include="MailingListMemberCollection.cs" />
+    <Compile Include="POP3_Settings.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueueItem.cs" />
+    <Compile Include="QueueItemCollection.cs" />
+    <Compile Include="Queues.cs" />
+    <Compile Include="RecycleBin.cs" />
+    <Compile Include="Relay_Settings.cs" />
+    <Compile Include="RestoreFlags_enum.cs" />
+    <Compile Include="Route.cs" />
+    <Compile Include="RouteActionBase.cs" />
+    <Compile Include="RouteAction_enum.cs" />
+    <Compile Include="RouteAction_RouteToEmail.cs" />
+    <Compile Include="RouteAction_RouteToHost.cs" />
+    <Compile Include="RouteAction_RouteToMailbox.cs" />
+    <Compile Include="RouteCollection.cs" />
+    <Compile Include="Server.cs" />
+    <Compile Include="ServerAuthenticationType_enum.cs" />
+    <Compile Include="ServerInfo.cs" />
+    <Compile Include="ServerReturnMessage.cs" />
+    <Compile Include="ServerReturnMessages.cs" />
+    <Compile Include="Service_enum.cs" />
+    <Compile Include="Session.cs" />
+    <Compile Include="SessionCollection.cs" />
+    <Compile Include="SharedFolderRootType_enum.cs" />
+    <Compile Include="SharedRootFolder.cs" />
+    <Compile Include="SharedRootFolderCollection.cs" />
+    <Compile Include="SIP_Call.cs" />
+    <Compile Include="SIP_CallCollection.cs" />
+    <Compile Include="SIP_Gateway.cs" />
+    <Compile Include="SIP_GatewayCollection.cs" />
+    <Compile Include="SIP_Registration.cs" />
+    <Compile Include="SIP_RegistrationCollection.cs" />
+    <Compile Include="SIP_RegistrationContact.cs" />
+    <Compile Include="SIP_Settings.cs" />
+    <Compile Include="SMTP_Settings.cs" />
+    <Compile Include="System_Settings.cs" />
+    <Compile Include="User.cs" />
+    <Compile Include="UserCollection.cs" />
+    <Compile Include="UserEmailAddressCollection.cs" />
+    <Compile Include="UserFolder.cs" />
+    <Compile Include="UserFolderAcl.cs" />
+    <Compile Include="UserFolderAclCollection.cs" />
+    <Compile Include="UserFolderCollection.cs" />
+    <Compile Include="UserMessageRule.cs" />
+    <Compile Include="UserMessageRuleActionBase.cs" />
+    <Compile Include="UserMessageRuleActionCollection.cs" />
+    <Compile Include="UserMessageRuleAction_AddHeaderField.cs" />
+    <Compile Include="UserMessageRuleAction_AutoResponse.cs" />
+    <Compile Include="UserMessageRuleAction_DeleteMessage.cs" />
+    <Compile Include="UserMessageRuleAction_enum.cs" />
+    <Compile Include="UserMessageRuleAction_ExecuteProgram.cs" />
+    <Compile Include="UserMessageRuleAction_ForwardToEmail.cs" />
+    <Compile Include="UserMessageRuleAction_ForwardToHost.cs" />
+    <Compile Include="UserMessageRuleAction_MoveToImapFolder.cs" />
+    <Compile Include="UserMessageRuleAction_PostToHttp.cs" />
+    <Compile Include="UserMessageRuleAction_PostToNntpNewsgroup.cs" />
+    <Compile Include="UserMessageRuleAction_RemoveHeaderField.cs" />
+    <Compile Include="UserMessageRuleAction_StoreToDiskFolder.cs" />
+    <Compile Include="UserMessageRuleAction_StoreToFtp.cs" />
+    <Compile Include="UserMessageRuleCollection.cs" />
+    <Compile Include="UserPermissions_enum.cs" />
+    <Compile Include="UserRemoteServer.cs" />
+    <Compile Include="UserRemoteServerCollection.cs" />
+    <Compile Include="UsersDefaultFolder.cs" />
+    <Compile Include="UsersDefaultFolderCollection.cs" />
+    <Compile Include="Utils.cs" />
+    <Compile Include="VirtualServer.cs" />
+    <Compile Include="VirtualServerCollection.cs" />
+    <Compile Include="XmlTable.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LumiNet_45\LumiNet_45.csproj">
+      <Project>{9250c1e1-a087-4f0c-bedd-ed0780083f2e}</Project>
+      <Name>LumiNet_45</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -1,0 +1,12 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <Routing>
+    <RouteID>9de47bcd-002e-418d-a1e5-352690d3ac96</RouteID>
+    <Cost>632905770549687500</Cost>
+    <Enabled>false</Enabled>
+    <Description>test X</Description>
+    <Pattern>*@test.lumisoft.ee</Pattern>
+    <Action>1</Action>
+    <ActionData>77u/PEFjdGlvbkRhdGE+DQoJPE1haWxib3g+eDI8L01haWxib3g+DQo8L0FjdGlvbkRhdGE+</ActionData>
+  </Routing>
+</NewDataSet>

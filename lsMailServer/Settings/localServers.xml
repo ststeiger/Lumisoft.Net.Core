@@ -1,0 +1,12 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <Servers>
+    <ID>2542dg</ID>
+    <Enabled>True</Enabled>
+    <Name>[local XML]</Name>
+    <API_assembly>xml_API.dll</API_assembly>
+    <API_class>LumiSoft.MailServer.xml_API</API_class>
+    <API_initstring>datapath=Settings\local_xml\
+mailstorepath=c:\MailStore\</API_initstring>
+  </Servers>
+</NewDataSet>

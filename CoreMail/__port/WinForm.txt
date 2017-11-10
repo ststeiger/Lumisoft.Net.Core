@@ -1,0 +1,41 @@
+
+    public class wfrm_WinForm : Form
+    {
+        private Button m_pStart = null;
+        private Button m_pStop  = null;
+
+        private Server m_pServer = null;
+
+    public wfrm_WinForm()
+        {
+            InitUI();
+
+            m_pServer = new Server();
+        }
+
+
+        private void m_pStart_Click(object sender, EventArgs e)
+        {
+            try{                
+                m_pServer.Start(); 
+                m_pStart.Enabled = false;
+                m_pStop.Enabled  = true;
+            }
+            catch(Exception x){
+                MessageBox.Show(x.Message);
+            }
+        }
+
+
+
+        private void m_pStop_Click(object sender, EventArgs e)
+        {
+            try{                
+                m_pServer.Stop();  
+                m_pStart.Enabled = true;
+                m_pStop.Enabled  = false;              
+            }
+            catch(Exception x){
+                MessageBox.Show(x.Message);
+            }
+        }

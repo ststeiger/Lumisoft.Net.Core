@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <GroupMembers>
+    <GroupID>725a6fd0-ff44-4211-a473-f0f2dc159102</GroupID>
+    <UserOrGroup>test</UserOrGroup>
+  </GroupMembers>
+  <GroupMembers>
+    <GroupID>725a6fd0-ff44-4211-a473-f0f2dc159102</GroupID>
+    <UserOrGroup>wm</UserOrGroup>
+  </GroupMembers>
+  <GroupMembers>
+    <GroupID>fb6509ff-3974-42d2-9eda-6196fb1db35b</GroupID>
+    <UserOrGroup>xxx</UserOrGroup>
+  </GroupMembers>
+</NewDataSet>
