@@ -5,10 +5,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="IMAP\Server\old\" />
+    <Compile Remove="IMAP\Server\old\**" />
+    <Compile Remove="_Obsolete\Data\**" />
+    <EmbeddedResource Remove="IMAP\Server\old\**" />
+    <EmbeddedResource Remove="_Obsolete\Data\**" />
+    <None Remove="IMAP\Server\old\**" />
+    <None Remove="_Obsolete\Data\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Properties\" />
     <Folder Include="SPF\" />
-    <Folder Include="_Obsolete\Data\" />
   </ItemGroup>
 
   <ItemGroup>

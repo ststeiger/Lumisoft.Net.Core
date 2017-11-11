@@ -682,9 +682,7 @@
     <Content Include="license.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="IMAP\Server\old\" />
     <Folder Include="SPF\" />
-    <Folder Include="_Obsolete\Data\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
