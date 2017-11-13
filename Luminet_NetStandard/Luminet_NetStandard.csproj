@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BouncyCastle\BouncyCastle.csproj" />
+    <ProjectReference Include="..\ImageSharp\ImageSharp.csproj" />
   </ItemGroup>
 
 </Project>

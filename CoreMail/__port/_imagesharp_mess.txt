@@ -1,0 +1,14 @@
+
+ImageSharp is a big mess
+
+SixLabors.ImageSharp requires: 
+System.Buffers
+System.Memory (pre-release)
+System.Runtime.CompilerServices.Unsafe
++ Allow unsafe code
+
+
+
+SixLabors.Core:
+System.Numerics.Vector (for SixLabors.Core)
++ InternalsVisibleTo in AssemblyInfo.cs
