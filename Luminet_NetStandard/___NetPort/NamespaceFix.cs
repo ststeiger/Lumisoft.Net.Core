@@ -1,19 +1,12 @@
 ﻿
-//namespace LumiSoft.Net.Log
-//{
-//    public class Logger
-//    {
-//    }
-//}
-
-
-
 namespace System.Drawing 
 {
 
 
     public class Image
     {
+        private System.IO.Stream m_stream;
+
         public static Image FromStream(System.IO.Stream strm)
         {
             return null;
