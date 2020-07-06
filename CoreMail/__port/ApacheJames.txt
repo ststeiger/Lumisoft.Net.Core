@@ -5,10 +5,10 @@ jdbc:sqlserver://[serverName[\instanceName][:portNumber]][;property=value[;prope
 
 
 
- <data-source name="maildb" class="org.apache.james.util.dbcp.JdbcDataSource">
-         <driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</driver>
-         <dburl>jdbc:microsoft:sqlserver://127.0.0.1:1433?database=mail</dburl>
-         <user>sa</user>
-         <password>[removed]</password>
-         <max>20</max>
-      </data-source>
+<data-source name="maildb" class="org.apache.james.util.dbcp.JdbcDataSource">
+    <driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</driver>
+    <dburl>jdbc:microsoft:sqlserver://127.0.0.1:1433?database=mail</dburl>
+    <user>sa</user>
+    <password>[removed]</password>
+    <max>20</max>
+</data-source>
