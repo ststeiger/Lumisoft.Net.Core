@@ -17,13 +17,13 @@ namespace System.Drawing
     public class Image
     {
 
-        protected SixLabors.ImageSharp.Image<SixLabors.ImageSharp.Rgba32> m_image;
+        protected SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32> m_image;
 
         public Image() { }
 
         public Image(System.IO.Stream strm)
         {
-            this.m_image = SixLabors.ImageSharp.Image.Load(strm);
+            this.m_image = SixLabors.ImageSharp.Image.Load<SixLabors.ImageSharp.PixelFormats.Rgba32>(strm);
         }
 
         public static Image FromStream(System.IO.Stream strm)

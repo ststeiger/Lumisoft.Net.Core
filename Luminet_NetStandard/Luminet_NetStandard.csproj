@@ -19,12 +19,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-rc0003" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="4.4.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BouncyCastle\BouncyCastle.csproj" />
-    <ProjectReference Include="..\ImageSharp\ImageSharp.csproj" />
   </ItemGroup>
 
 </Project>
