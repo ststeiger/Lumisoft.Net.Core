@@ -1,3 +1,4 @@
+
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -5,12 +6,16 @@ using System.Net.Sockets;
 using LumiSoft.Net;
 using LumiSoft.Net.TCP;
 
+
 namespace LumiSoft.MailServer.Monitoring
 {
+
+
     /// <summary>
     /// LumiSoft mailserver monitoring server.
     /// </summary>
-    public class MonitoringServer : TCP_Server<MonitoringServerSession>
+    public class MonitoringServer
+        : TCP_Server<MonitoringServerSession>
     {
         private int m_MaxBadCommands = 30;
         private Server m_pServer = null;
@@ -36,8 +41,6 @@ namespace LumiSoft.MailServer.Monitoring
             this.SessionIdleTimeout = 30 * 60; // Session idle timeout after 30 min
         }
 
-
-        #region Properties Implementation
 
         /// <summary>
         /// Gets or sets how many bad commands session can have before it's terminated. Value 0 means unlimited.
@@ -79,6 +82,6 @@ namespace LumiSoft.MailServer.Monitoring
             get { return m_pServer; }
         }
 
-        #endregion
+
     }
 }

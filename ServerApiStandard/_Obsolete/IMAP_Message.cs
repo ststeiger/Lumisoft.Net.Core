@@ -1,20 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace LumiSoft.Net.IMAP.Server
 {
+
+
     /// <summary>
     /// IMAP message info.
     /// </summary>
     public class IMAP_Message
     {
-        private IMAP_MessageCollection m_pOwner       = null;
-        private string                 m_ID           = "";
-        private long                   m_UID          = 0;
-        private DateTime               m_InternalDate = DateTime.Now;
-        private long                   m_Size         = 0;
-        private IMAP_MessageFlags      m_Flags        = IMAP_MessageFlags.None;
+        private IMAP_MessageCollection m_pOwner = null;
+        private string m_ID = "";
+        private long m_UID = 0;
+        private System.DateTime m_InternalDate = System.DateTime.Now;
+        private long m_Size = 0;
+        private IMAP_MessageFlags m_Flags = IMAP_MessageFlags.None;
 
         /// <summary>
         /// Default constructor.
@@ -25,18 +24,16 @@ namespace LumiSoft.Net.IMAP.Server
         /// <param name="internalDate">Message store date.</param>
         /// <param name="size">Message size in bytes.</param>
         /// <param name="flags">Message flags.</param>
-        public IMAP_Message(IMAP_MessageCollection onwer,string id,long uid,DateTime internalDate,long size,IMAP_MessageFlags flags)
+        public IMAP_Message(IMAP_MessageCollection onwer, string id, long uid, System.DateTime internalDate, long size, IMAP_MessageFlags flags)
         {
-            m_pOwner       = onwer;
-            m_ID           = id;
-            m_UID          = uid;
+            m_pOwner = onwer;
+            m_ID = id;
+            m_UID = uid;
             m_InternalDate = internalDate;
-            m_Size         = size;
-            m_Flags        = flags;
+            m_Size = size;
+            m_Flags = flags;
         }
 
-
-        #region method SetFlags
 
         /// <summary>
         /// Sets message flags.
@@ -47,17 +44,13 @@ namespace LumiSoft.Net.IMAP.Server
             m_Flags = flags;
         }
 
-        #endregion
-
-
-        #region Properties Implementation
 
         /// <summary>
         /// Gets message 1 based sequence number in the collection. This property is slow, use with care, never use in big for loops !
         /// </summary>
         public int SequenceNo
         {
-            get{ return m_pOwner.IndexOf(this) + 1; }
+            get { return m_pOwner.IndexOf(this) + 1; }
         }
 
         /// <summary>
@@ -65,7 +58,7 @@ namespace LumiSoft.Net.IMAP.Server
         /// </summary>
         public string ID
         {
-            get{ return m_ID; }
+            get { return m_ID; }
         }
 
         /// <summary>
@@ -73,15 +66,15 @@ namespace LumiSoft.Net.IMAP.Server
         /// </summary>
         public long UID
         {
-            get{ return m_UID; }
+            get { return m_UID; }
         }
 
         /// <summary>
         /// Gets message store date.
         /// </summary>
-        public DateTime InternalDate
+        public System.DateTime InternalDate
         {
-            get{ return m_InternalDate; }
+            get { return m_InternalDate; }
         }
 
         /// <summary>
@@ -89,7 +82,7 @@ namespace LumiSoft.Net.IMAP.Server
         /// </summary>
         public long Size
         {
-            get{ return m_Size; }
+            get { return m_Size; }
         }
 
         /// <summary>
@@ -97,7 +90,7 @@ namespace LumiSoft.Net.IMAP.Server
         /// </summary>
         public IMAP_MessageFlags Flags
         {
-            get{ return m_Flags; }
+            get { return m_Flags; }
         }
 
         /// <summary>
@@ -105,10 +98,11 @@ namespace LumiSoft.Net.IMAP.Server
         /// </summary>
         public string FlagsString
         {
-            get{ return IMAP_Utils.MessageFlagsToString(m_Flags); }
+            get { return IMAP_Utils.MessageFlagsToString(m_Flags); }
         }
 
-        #endregion
 
     }
+
+
 }

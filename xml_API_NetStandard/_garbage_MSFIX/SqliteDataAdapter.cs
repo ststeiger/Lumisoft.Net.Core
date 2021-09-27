@@ -22,7 +22,7 @@ namespace Microsoft.Data.Sqlite
     using SQLiteCommand = Mono.Data.Sqlite.SqliteCommand;
     using SQLiteParameter = Mono.Data.Sqlite.SqliteParameter;
 #endif
-    
+
 
     public sealed class SqliteDataAdapter : DbDataAdapter
     {
@@ -35,7 +35,7 @@ namespace Microsoft.Data.Sqlite
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
-#region Public Constructors
+        #region Public Constructors
         /// <overloads>
         /// This class is just a shell around the DbDataAdapter.  Nothing from
         /// DbDataAdapter is overridden here, just a few constructors are defined.
@@ -127,11 +127,11 @@ namespace Microsoft.Data.Sqlite
 
             SelectCommand = new SQLiteCommand(commandText, cnn);
         }
-#endregion
+        #endregion
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
-#region IDisposable "Pattern" Members
+        #region IDisposable "Pattern" Members
         private bool disposed;
         private void CheckDisposed() /* throw */
         {
@@ -195,7 +195,7 @@ namespace Microsoft.Data.Sqlite
                 disposed = true;
             }
         }
-#endregion
+        #endregion
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -1,9 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace LumiSoft.MailServer
 {
+
+
     /// <summary>
     /// Specifiess IP security action.
     /// </summary>
@@ -19,4 +18,6 @@ namespace LumiSoft.MailServer
         /// </summary>
         Deny = 2,
     }
+
+
 }

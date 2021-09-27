@@ -1,3 +1,4 @@
+
 using System;
 using System.IO;
 using System.IO.Compression;
@@ -26,15 +27,19 @@ using LumiSoft.Net.SIP.Proxy;
 using LumiSoft.Net.Mail;
 using LumiSoft.Net.MIME;
 
+
 namespace LumiSoft.MailServer.Monitoring
 {
-	/// <summary>
-	/// Monitoring server session.
-	/// </summary>
-	public class MonitoringServerSession : TCP_ServerSession
-	{
-		private int             m_BadCmdCount = 0;
-        private GenericIdentity m_pUser       = null;
+
+
+    /// <summary>
+    /// Monitoring server session.
+    /// </summary>
+    public class MonitoringServerSession
+        : TCP_ServerSession
+    {
+        private int m_BadCmdCount = 0;
+        private GenericIdentity m_pUser = null;
 
         /// <summary>
         /// Default constructor.
@@ -42,8 +47,8 @@ namespace LumiSoft.MailServer.Monitoring
         public MonitoringServerSession()
         {
         }
-        
-        
+
+
         #region override method Start
 
         /// <summary>
@@ -52,18 +57,21 @@ namespace LumiSoft.MailServer.Monitoring
         protected override void Start()
         {
             base.Start();
-            
-            try{
+
+            try
+            {
                 //--- Validate connecting IP --------------------------------------------------------------//
                 DataSet dsSettings = new DataSet();
                 dsSettings.Tables.Add("IP_Access");
                 dsSettings.Tables["IP_Access"].Columns.Add("StartIP");
                 dsSettings.Tables["IP_Access"].Columns.Add("EndIP");
 
-                if(File.Exists(SCore.PathFix(this.Server.MailServer.StartupPath + "Settings\\AdminAccess.xml"))){
+                if (File.Exists(SCore.PathFix(this.Server.MailServer.StartupPath + "Settings\\AdminAccess.xml")))
+                {
                     dsSettings.ReadXml(SCore.PathFix(this.Server.MailServer.StartupPath + "Settings\\AdminAccess.xml"));
                 }
-                else{
+                else
+                {
                     // There is no access conf file, add default values.
 
                     DataRow dr = dsSettings.Tables["IP_Access"].NewRow();
@@ -74,26 +82,30 @@ namespace LumiSoft.MailServer.Monitoring
 
                 bool canAcces = false;
                 IPAddress ip = ((IPEndPoint)this.RemoteEndPoint).Address;
-                foreach(DataRow dr in dsSettings.Tables["IP_Access"].Rows){
+                foreach (DataRow dr in dsSettings.Tables["IP_Access"].Rows)
+                {
                     // See if IP matches range
-                    if(Net_Utils.CompareIP(IPAddress.Parse(dr["StartIP"].ToString()),ip) >= 0 && Net_Utils.CompareIP(IPAddress.Parse(dr["EndIP"].ToString()),ip) <= 0){
+                    if (Net_Utils.CompareIP(IPAddress.Parse(dr["StartIP"].ToString()), ip) >= 0 && Net_Utils.CompareIP(IPAddress.Parse(dr["EndIP"].ToString()), ip) <= 0)
+                    {
                         canAcces = true;
                         break;
-                    }                    
+                    }
                 }
-                if(!canAcces){
+                if (!canAcces)
+                {
                     this.Disconnect("-ERR Access denied.");
                     return;
                 }
                 //------------------------------------------------------------------------------------------//
 
-				WriteLine("+OK [" + this.LocalHostName + "] Monitoring Server ready");
+                WriteLine("+OK [" + this.LocalHostName + "] Monitoring Server ready");
 
-				BeginReadCmd();
-			}
-			catch(Exception x){
-				OnError(x);
-			}  
+                BeginReadCmd();
+            }
+            catch (Exception x)
+            {
+                OnError(x);
+            }
         }
 
         #endregion
@@ -106,10 +118,12 @@ namespace LumiSoft.MailServer.Monitoring
         /// <param name="x">Exception happened.</param>
         protected override void OnError(Exception x)
         {
-            if(this.IsDisposed){
+            if (this.IsDisposed)
+            {
                 return;
             }
-            if(x == null){
+            if (x == null)
+            {
                 return;
             }
 
@@ -117,27 +131,33 @@ namespace LumiSoft.MailServer.Monitoring
                 IO and Socket exceptions are permanent, so we must end session.
             */
 
-            try{
+            try
+            {
                 // Permanent error.
-                if(x is IOException || x is SocketException){
+                if (x is IOException || x is SocketException)
+                {
                     Dispose();
                 }
                 // xxx error, may be temporary.
-                else{
+                else
+                {
                     // Raise POP3_Server.Error event.
                     base.OnError(x);
 
                     // Try to send "-ERR Internal server error."
-                    try{
+                    try
+                    {
                         WriteLine("-ERR Internal server error.");
                     }
-                    catch{
+                    catch
+                    {
                         // Error is permanent.
                         Dispose();
                     }
                 }
             }
-            catch{
+            catch
+            {
             }
         }
 
@@ -154,12 +174,14 @@ namespace LumiSoft.MailServer.Monitoring
         /// </remarks>
         protected override void OnTimeout()
         {
-            try{
+            try
+            {
                 // TODO: ? We should close active message stream.
 
                 WriteLine("-ERR Idle timeout, closing connection.");
             }
-            catch{
+            catch
+            {
                 // Skip errors.
             }
         }
@@ -174,33 +196,40 @@ namespace LumiSoft.MailServer.Monitoring
         /// </summary>
         private void BeginReadCmd()
         {
-            if(this.IsDisposed){
+            if (this.IsDisposed)
+            {
                 return;
             }
 
-            try{
-                SmartStream.ReadLineAsyncOP readLineOP = new SmartStream.ReadLineAsyncOP(new byte[32000],SizeExceededAction.JunkAndThrowException);
+            try
+            {
+                SmartStream.ReadLineAsyncOP readLineOP = new SmartStream.ReadLineAsyncOP(new byte[32000], SizeExceededAction.JunkAndThrowException);
                 // This event is raised only when read next coomand completes asynchronously.
-                readLineOP.Completed += new EventHandler<EventArgs<SmartStream.ReadLineAsyncOP>>(delegate(object sender,EventArgs<SmartStream.ReadLineAsyncOP> e){                
-                    if(ProcessCmd(readLineOP)){
+                readLineOP.Completed += new EventHandler<EventArgs<SmartStream.ReadLineAsyncOP>>(delegate (object sender, EventArgs<SmartStream.ReadLineAsyncOP> e)
+                {
+                    if (ProcessCmd(readLineOP))
+                    {
                         BeginReadCmd();
                     }
                 });
                 // Process incoming commands while, command reading completes synchronously.
-                while(this.TcpStream.ReadLine(readLineOP,true)){
-                    if(!ProcessCmd(readLineOP)){
+                while (this.TcpStream.ReadLine(readLineOP, true))
+                {
+                    if (!ProcessCmd(readLineOP))
+                    {
                         break;
                     }
                 }
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 OnError(x);
             }
         }
 
         #endregion
 
-		#region method ProcessCmd
+        #region method ProcessCmd
 
         /// <summary>
         /// Completes command reading operation.
@@ -209,503 +238,508 @@ namespace LumiSoft.MailServer.Monitoring
         /// <returns>Returns true if server should start reading next command.</returns>
         private bool ProcessCmd(SmartStream.ReadLineAsyncOP op)
         {
-			// Check errors.
-            if(op.Error != null){
+            // Check errors.
+            if (op.Error != null)
+            {
                 OnError(op.Error);
             }
 
             bool getNextCmd = true;
 
-            try{
-                if(this.IsDisposed){
+            try
+            {
+                if (this.IsDisposed)
+                {
                     return false;
                 }
-                                
-                string[] cmd_args = Encoding.UTF8.GetString(op.Buffer,0,op.LineBytesInBuffer).Split(new char[]{' '},2);
-                string   cmd      = cmd_args[0].ToUpperInvariant();
-                string   args     = cmd_args.Length == 2 ? cmd_args[1] : "";
-                			    
-			    switch(cmd)
-			    {	
+
+                string[] cmd_args = Encoding.UTF8.GetString(op.Buffer, 0, op.LineBytesInBuffer).Split(new char[] { ' ' }, 2);
+                string cmd = cmd_args[0].ToUpperInvariant();
+                string args = cmd_args.Length == 2 ? cmd_args[1] : "";
+
+                switch (cmd)
+                {
                     case "NOOP":
-				        Noop();
-			        break;
+                        Noop();
+                        break;
 
                     case "LOGIN":
-				        Login(args);
-					    break;
+                        Login(args);
+                        break;
 
 
                     case "GETSERVERINFO":
-				        GetServerInfo();
-					    break;
+                        GetServerInfo();
+                        break;
 
                     case "GETIPADDRESSES":
-				        GetIPAddresses();
-					    break;
+                        GetIPAddresses();
+                        break;
 
                     case "KILLSESSION":
-				        KillSession(args);
-					    break;
+                        KillSession(args);
+                        break;
 
                     case "GETSESSIONS":
-				        GetSessions();
-					    break;
+                        GetSessions();
+                        break;
 
                     case "GETEVENTS":
-				        GetEvents();
-					    break;
+                        GetEvents();
+                        break;
 
                     case "GETSIPREGISTRATIONS":
-				        GetSipRegistrations(args);
-					    break;
+                        GetSipRegistrations(args);
+                        break;
 
                     case "GETSIPREGISTRATION":
-				        GetSipRegistration(args);
-					    break;
+                        GetSipRegistration(args);
+                        break;
 
                     case "SETSIPREGISTRATION":
-				        SetSipRegistration(args);
-					    break;
-                                   
+                        SetSipRegistration(args);
+                        break;
+
                     case "DELETESIPREGISTRATION":
-				        DeleteSipRegistration(args);
-					    break;
+                        DeleteSipRegistration(args);
+                        break;
 
                     case "GETSIPCALLS":
-				        GetSipCalls(args);
-					    break;
+                        GetSipCalls(args);
+                        break;
 
                     case "TERMINATESIPCALL":
-				        TerminateSipCall(args);
-					    break;
+                        TerminateSipCall(args);
+                        break;
 
                     case "CLEAREVENTS":
-				        ClearEvents();
-					    break;
+                        ClearEvents();
+                        break;
 
                     case "GETLOGSESSIONS":
-				        GetLogSessions(args);
-					    break;
+                        GetLogSessions(args);
+                        break;
 
                     case "GETSESSIONLOG":
-				        GetSessionLog(args);
-					    break;
+                        GetSessionLog(args);
+                        break;
 
                     case "GETVIRTUALSERVERS":
-					    GetVirtualServers();
-					    break;
+                        GetVirtualServers();
+                        break;
 
                     case "GETVIRTUALSERVERAPIS":
-					    GetVirtualServerAPIs();
-					    break;
+                        GetVirtualServerAPIs();
+                        break;
 
                     case "ADDVIRTUALSERVER":
-					    AddVirtualServer(args);
-					    break;
+                        AddVirtualServer(args);
+                        break;
 
                     case "UPDATEVIRTUALSERVER":
-					    UpdateVirtualServer(args);
-					    break;
+                        UpdateVirtualServer(args);
+                        break;
 
                     case "DELETEVIRTUALSERVER":
-					    DeleteVirtualServers(args);
-					    break;
+                        DeleteVirtualServers(args);
+                        break;
 
                     case "GETSETTINGS":
-					    GetSettings(args);
-					    break;
+                        GetSettings(args);
+                        break;
 
                     case "UPDATESETTINGS":
-					    UpdateSettings(args);
-					    break;
+                        UpdateSettings(args);
+                        break;
 
                     case "GETDOMAINS":
-					    GetDomains(args);
-					    break;
+                        GetDomains(args);
+                        break;
 
 
                     case "ADDDOMAIN":
-					    AddDomain(args);
-					    break;
+                        AddDomain(args);
+                        break;
 
                     case "UPDATEDOMAIN":
-					    UpdateDomain(args);
-					    break;
+                        UpdateDomain(args);
+                        break;
 
                     case "DELETEDOMAIN":
-					    DeleteDomain(args);
-					    break;
+                        DeleteDomain(args);
+                        break;
 
 
                     case "GETUSERS":
-					    GetUsers(args);
-					    break;
+                        GetUsers(args);
+                        break;
 
                     case "ADDUSER":
-					    AddUser(args);
-					    break;
+                        AddUser(args);
+                        break;
 
                     case "UPDATEUSER":
-					    UpdateUser(args);
-					    break;
+                        UpdateUser(args);
+                        break;
 
                     case "DELETEUSER":
-					    DeleteUser(args);
-					    break;
+                        DeleteUser(args);
+                        break;
 
                     case "GETUSEREMAILADDRESSES":
-					    GetUserEmailAddresses(args);
-					    break;
+                        GetUserEmailAddresses(args);
+                        break;
 
                     case "ADDUSEREMAILADDRESS":
-					    AddUserEmailAddress(args);
-					    break;
+                        AddUserEmailAddress(args);
+                        break;
 
                     case "DELETEUSEREMAILADDRESS":
-					    DeleteUserEmailAddress(args);
-					    break;
+                        DeleteUserEmailAddress(args);
+                        break;
 
                     case "GETUSERMESSAGERULES":
-					    GetUserMessageRules(args);
-					    break;
+                        GetUserMessageRules(args);
+                        break;
 
                     case "ADDUSERMESSAGERULE":
-					    AddUserMessageRule(args);
-					    break;
+                        AddUserMessageRule(args);
+                        break;
 
                     case "UPDATEUSERMESSAGERULE":
-					    UpdateUserMessageRule(args);
-					    break;
+                        UpdateUserMessageRule(args);
+                        break;
 
                     case "DELETEUSERMESSAGERULE":
-					    DeleteUserMessageRule(args);
-					    break;
+                        DeleteUserMessageRule(args);
+                        break;
 
                     case "GETUSERMESSAGERULEACTIONS":
-    					GetUserMessageRuleActions(args);
-	    				break;
+                        GetUserMessageRuleActions(args);
+                        break;
 
                     case "ADDUSERMESSAGERULEACTION":
-				    	AddUserMessageRuleAction(args);
-			    		break;
+                        AddUserMessageRuleAction(args);
+                        break;
 
                     case "UPDATEUSERMESSAGERULEACTION":
-					    UpdateUserMessageRuleAction(args);
-					    break;
+                        UpdateUserMessageRuleAction(args);
+                        break;
 
                     case "DELETEUSERMESSAGERULEACTION":
-					    DeleteUserMessageRuleAction(args);
-					    break;
+                        DeleteUserMessageRuleAction(args);
+                        break;
 
 
                     case "GETUSERMAILBOXSIZE":
-					    GetUserMailboxSize(args);
-					    break;
+                        GetUserMailboxSize(args);
+                        break;
 
                     case "GETUSERLASTLOGINTIME":
-					    GetUserLastLoginTime(args);
-					    break;
+                        GetUserLastLoginTime(args);
+                        break;
 
                     case "GETUSERFOLDERS":
-					    GetUserFolders(args);
-					    break;
+                        GetUserFolders(args);
+                        break;
 
                     case "ADDUSERFOLDER":
-					    AddUserFolder(args);
-					    break;
+                        AddUserFolder(args);
+                        break;
 
                     case "DELETEUSERFOLDER":
-					    DeleteUserFolder(args);
-					    break;
+                        DeleteUserFolder(args);
+                        break;
 
                     case "RENAMEUSERFOLDER":
-					    RenameUserFolder(args);
-					    break;
+                        RenameUserFolder(args);
+                        break;
 
                     case "GETUSERFOLDERINFO":
-					    GetUserFolderInfo(args);
-					    break;
+                        GetUserFolderInfo(args);
+                        break;
 
                     case "GETUSERFOLDERMESSAGESINFO":
-					    GetUserFolderMessagesInfo(args);
-					    break;
+                        GetUserFolderMessagesInfo(args);
+                        break;
 
                     case "GETUSERFOLDERMESSAGE":
-					    GetUserFolderMessage(args);
-					    break;
+                        GetUserFolderMessage(args);
+                        break;
 
                     case "STOREUSERFOLDERMESSAGE":
-					    StoreUserFolderMessage(args);
-					    break;
+                        StoreUserFolderMessage(args);
+                        break;
 
                     case "DELETEUSERFOLDERMESSAGE":
-					    DeleteUserFolderMessage(args);
-					    break;
+                        DeleteUserFolderMessage(args);
+                        break;
 
                     case "GETUSERREMOTESERVERS":
-					    GetUserRemoteServers(args);
-					    break;
+                        GetUserRemoteServers(args);
+                        break;
 
                     case "ADDUSERREMOTESERVER":
-					    AddUserRemoteServer(args);
-					    break;
+                        AddUserRemoteServer(args);
+                        break;
 
                     case "UPDATEUSERREMOTESERVER":
-	    				UpdateUserRemoteServer(args);
-		    			break;
+                        UpdateUserRemoteServer(args);
+                        break;
 
                     case "DELETEUSERREMOTESERVER":
-					    DeleteUserRemoteServer(args);
-					    break;
+                        DeleteUserRemoteServer(args);
+                        break;
 
                     case "GETUSERFOLDERACL":
-					    GetUserFolderAcl(args);
-					    break;
+                        GetUserFolderAcl(args);
+                        break;
 
                     case "SETUSERFOLDERACL":
-					    SetUserFolderAcl(args);
-					    break;
+                        SetUserFolderAcl(args);
+                        break;
 
                     case "DELETEUSERFOLDERACL":
-					    DeleteUserFolderAcl(args);
-					    break;
+                        DeleteUserFolderAcl(args);
+                        break;
 
 
                     case "GETUSERSDEFAULTFOLDERS":
-					    GetUsersDefaultFolders(args);
-					    break;
+                        GetUsersDefaultFolders(args);
+                        break;
 
                     case "ADDUSERSDEFAULTFOLDER":
-					    AddUsersDefaultFolder(args);
-					    break;
+                        AddUsersDefaultFolder(args);
+                        break;
 
                     case "DELETEUSERSDEFAULTFOLDER":
-					    DeleteUsersDefaultFolder(args);
-					    break;
+                        DeleteUsersDefaultFolder(args);
+                        break;
 
 
                     case "GETGROUPS":
-					    GetGroups(args);
-					    break;
+                        GetGroups(args);
+                        break;
 
                     case "GETGROUPMEMBERS":
-					    GetGroupMembers(args);
-					    break;
+                        GetGroupMembers(args);
+                        break;
 
                     case "ADDGROUP":
-					    AddGroup(args);
-					    break;
+                        AddGroup(args);
+                        break;
 
                     case "UPDATEGROUP":
-				    	UpdateGroup(args);
-					    break;
+                        UpdateGroup(args);
+                        break;
 
                     case "DELETEGROUP":
-					    DeleteGroup(args);
-					    break;
+                        DeleteGroup(args);
+                        break;
 
                     case "ADDGROUPMEMBER":
-					    AddGroupMember(args);
-					    break;
+                        AddGroupMember(args);
+                        break;
 
                     case "DELETEGROUPMEMBER":
-					    DeleteGroupMember(args);
-					    break;
+                        DeleteGroupMember(args);
+                        break;
 
                     case "GETMAILINGLISTS":
-					    GetMailingLists(args);
-					    break;
+                        GetMailingLists(args);
+                        break;
 
                     case "ADDMAILINGLIST":
-					    AddMailingList(args);
-					    break;
-                                    
+                        AddMailingList(args);
+                        break;
+
                     case "UPDATEMAILINGLIST":
-					    UpdateMailingList(args);
-					    break;
+                        UpdateMailingList(args);
+                        break;
 
                     case "DELETEMAILINGLIST":
-					    DeleteMailingList(args);
-					    break;
+                        DeleteMailingList(args);
+                        break;
 
                     case "GETMAILINGLISTMEMBERS":
-					    GetMailingListMembers(args);
-					    break;
+                        GetMailingListMembers(args);
+                        break;
 
                     case "ADDMAILINGLISTMEMBER":
-					    AddMailingListMember(args);
-					    break;
+                        AddMailingListMember(args);
+                        break;
 
                     case "DELETEMAILINGLISTMEMBER":
-					    DeleteMailingListMember(args);
-					    break;
+                        DeleteMailingListMember(args);
+                        break;
 
                     case "GETMAILINGLISTACL":
-					    GetMailingListAcl(args);
-					    break;
+                        GetMailingListAcl(args);
+                        break;
 
                     case "ADDMAILINGLISTACL":
-					    AddMailingListAcl(args);
-					    break;
+                        AddMailingListAcl(args);
+                        break;
 
                     case "DELETEMAILINGLISTACL":
-					    DeleteMailingListAcl(args);
-					    break;
+                        DeleteMailingListAcl(args);
+                        break;
 
                     case "GETGLOBALMESSAGERULES":
-					    GetGlobalMessageRules(args);
-					    break;
+                        GetGlobalMessageRules(args);
+                        break;
 
                     case "ADDGLOBALMESSAGERULE":
-					    AddGlobalMessageRule(args);
-					    break;
+                        AddGlobalMessageRule(args);
+                        break;
 
                     case "UPDATEGLOBALMESSAGERULE":
-					    UpdateGlobalMessageRule(args);
-					    break;
+                        UpdateGlobalMessageRule(args);
+                        break;
 
                     case "DELETEGLOBALMESSAGERULE":
-					    DeleteGlobalMessageRule(args);
-					    break;
+                        DeleteGlobalMessageRule(args);
+                        break;
 
                     case "GETGLOBALMESSAGERULEACTIONS":
-					    GetGlobalMessageRuleActions(args);
-					    break;
+                        GetGlobalMessageRuleActions(args);
+                        break;
 
                     case "ADDGLOBALMESSAGERULEACTION":
-					    AddGlobalMessageRuleAction(args);
-					    break;
+                        AddGlobalMessageRuleAction(args);
+                        break;
 
                     case "UPDATEGLOBALMESSAGERULEACTION":
-					    UpdateGlobalMessageRuleAction(args);
-					    break;
+                        UpdateGlobalMessageRuleAction(args);
+                        break;
 
                     case "DELETEGLOBALMESSAGERULEACTION":
-					    DeleteGlobalMessageRuleAction(args);
-					    break;
+                        DeleteGlobalMessageRuleAction(args);
+                        break;
 
                     case "GETROUTES":
-					    GetRoutes(args);
-					    break;
+                        GetRoutes(args);
+                        break;
 
                     case "ADDROUTE":
-					    AddRoute(args);
-					    break;
+                        AddRoute(args);
+                        break;
 
                     case "UPDATEROUTE":
-					    UpdateRoute(args);
-					    break;
+                        UpdateRoute(args);
+                        break;
 
                     case "DELETEROUTE":
-					    DeleteRoute(args);
-					    break;
+                        DeleteRoute(args);
+                        break;
 
                     case "GETSHAREDROOTFOLDERS":
-					    GetSharedRootFolders(args);
-					    break;
+                        GetSharedRootFolders(args);
+                        break;
 
                     case "ADDSHAREDROOTFOLDER":
-					    AddSharedRootFolder(args);
-					    break;
+                        AddSharedRootFolder(args);
+                        break;
 
                     case "UPDATESHAREDROOTFOLDER":
-					    UpdateSharedRootFolder(args);
-					    break;
+                        UpdateSharedRootFolder(args);
+                        break;
 
                     case "DELETESHAREDROOTFOLDER":
-					    DeleteSharedRootFolder(args);
-					    break;
+                        DeleteSharedRootFolder(args);
+                        break;
 
                     case "GETFILTERTYPES":
-					    GetFilterTypes(args);
-					    break;
+                        GetFilterTypes(args);
+                        break;
 
                     case "GETFILTERS":
-					    GetFilters(args);
-					    break;
+                        GetFilters(args);
+                        break;
 
                     case "ADDFILTER":
-					    AddFilter(args);
-					    break;
+                        AddFilter(args);
+                        break;
 
                     case "UPDATEFILTER":
-					    UpdateFilter(args);
-					    break;
+                        UpdateFilter(args);
+                        break;
 
                     case "DELETEFILTER":
-					    DeleteFilter(args);
-					    break;
+                        DeleteFilter(args);
+                        break;
 
                     case "GETQUEUE":
-					    GetQueue(args);
-					    break;
+                        GetQueue(args);
+                        break;
 
                     case "GETIPSECURITY":
-					    GetIPSecurity(args);
-					    break;
+                        GetIPSecurity(args);
+                        break;
 
                     case "ADDIPSECURITYENTRY":
-					    AddIPSecurityEntry(args);
-					    break;
+                        AddIPSecurityEntry(args);
+                        break;
 
                     case "UPDATEIPSECURITYENTRY":
-					    UpdateIPSecurityEntry(args);
-					    break;
+                        UpdateIPSecurityEntry(args);
+                        break;
 
                     case "DELETEIPSECURITYENTRY":
-					    DeleteIPSecurityEntry(args);
-					    break;
+                        DeleteIPSecurityEntry(args);
+                        break;
 
 
                     case "GETRECYCLEBINSETTINGS":
-					    GetRecycleBinSettings(args);
-					    break;
+                        GetRecycleBinSettings(args);
+                        break;
 
                     case "UPDATERECYCLEBINSETTINGS":
-					    UpdateRecycleBinSettings(args);
-					    break;
+                        UpdateRecycleBinSettings(args);
+                        break;
 
                     case "GETRECYCLEBINMESSAGESINFO":
-					    GetRecycleBinMessagesInfo(args);
-					    break;
+                        GetRecycleBinMessagesInfo(args);
+                        break;
 
                     case "GETRECYCLEBINMESSAGE":
-					    GetRecycleBinMessage(args);
-					    break;
+                        GetRecycleBinMessage(args);
+                        break;
 
                     case "RESTORERECYCLEBINMESSAGE":
-					    RestoreRecycleBinMessage(args);
-					    break;
-                                    
-			
-				    case "QUIT":
-					    QUIT();
-					    getNextCmd = false;
-					    return true;
-										
-				    default:					
-					    WriteLine("-ERR command '" + cmd + "' unrecognized");
+                        RestoreRecycleBinMessage(args);
+                        break;
 
-					    //---- Check that maximum bad commands count isn't exceeded ---------------//
-					    if(m_BadCmdCount > (this.Server.MaxBadCommands - 1)){
-						    WriteLine("-ERR Too many bad commands, closing transmission channel");
-						    return true;
-					    }
-					    m_BadCmdCount++;
-					    //-------------------------------------------------------------------------//
 
-					    break;				
-			    }
+                    case "QUIT":
+                        QUIT();
+                        getNextCmd = false;
+                        return true;
+
+                    default:
+                        WriteLine("-ERR command '" + cmd + "' unrecognized");
+
+                        //---- Check that maximum bad commands count isn't exceeded ---------------//
+                        if (m_BadCmdCount > (this.Server.MaxBadCommands - 1))
+                        {
+                            WriteLine("-ERR Too many bad commands, closing transmission channel");
+                            return true;
+                        }
+                        m_BadCmdCount++;
+                        //-------------------------------------------------------------------------//
+
+                        break;
+                }
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 OnError(x);
             }
-			
-			return getNextCmd;
-		}
 
-		#endregion
+            return getNextCmd;
+        }
+
+        #endregion
 
 
 
@@ -729,9 +763,11 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: Login \"<UserName>\" \"<password>\"");
                     return;
                 }
@@ -741,10 +777,12 @@ namespace LumiSoft.MailServer.Monitoring
                 dsSettings.Tables["Users"].Columns.Add("UserName");
                 dsSettings.Tables["Users"].Columns.Add("Password");
 
-                if(File.Exists(SCore.PathFix(this.Server.MailServer.StartupPath + "Settings\\AdminAccess.xml"))){
+                if (File.Exists(SCore.PathFix(this.Server.MailServer.StartupPath + "Settings\\AdminAccess.xml")))
+                {
                     dsSettings.ReadXml(SCore.PathFix(this.Server.MailServer.StartupPath + "Settings\\AdminAccess.xml"));
                 }
-                else{
+                else
+                {
                     // There is no access conf file, add default values.
 
                     DataRow dr = dsSettings.Tables["Users"].NewRow();
@@ -753,19 +791,22 @@ namespace LumiSoft.MailServer.Monitoring
                     dsSettings.Tables["Users"].Rows.Add(dr);
                 }
 
-                foreach(DataRow dr in dsSettings.Tables["Users"].Rows){
-                    if(dr["UserName"].ToString() == TextUtils.UnQuoteString(args[0]) && dr["Password"].ToString() == TextUtils.UnQuoteString(args[1])){
+                foreach (DataRow dr in dsSettings.Tables["Users"].Rows)
+                {
+                    if (dr["UserName"].ToString() == TextUtils.UnQuoteString(args[0]) && dr["Password"].ToString() == TextUtils.UnQuoteString(args[1]))
+                    {
                         // Store session authenticated user name.
                         m_pUser = new GenericIdentity(dr["UserName"].ToString());
 
-                        WriteLine("+OK");                        
+                        WriteLine("+OK");
                         return;
                     }
                 }
 
                 WriteLine("-ERR LOGIN failed, invalid user name or password !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -785,14 +826,15 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
+            try
+            {
                 DataSet ds = new DataSet("dsServerInfo");
                 ds.Tables.Add("ServerInfo");
                 ds.Tables["ServerInfo"].Columns.Add("OS");
                 ds.Tables["ServerInfo"].Columns.Add("MailServerVersion");
                 ds.Tables["ServerInfo"].Columns.Add("MemoryUsage");
                 ds.Tables["ServerInfo"].Columns.Add("CpuUsage");
-                ds.Tables["ServerInfo"].Columns.Add("ServerStartTime",typeof(DateTime));
+                ds.Tables["ServerInfo"].Columns.Add("ServerStartTime", typeof(DateTime));
                 ds.Tables["ServerInfo"].Columns.Add("Read_KB_Sec");
                 ds.Tables["ServerInfo"].Columns.Add("Write_KB_Sec");
                 ds.Tables["ServerInfo"].Columns.Add("SmtpSessions");
@@ -800,95 +842,110 @@ namespace LumiSoft.MailServer.Monitoring
                 ds.Tables["ServerInfo"].Columns.Add("ImapSessions");
                 ds.Tables["ServerInfo"].Columns.Add("RelaySessions");
 
-                
+
                 // Calculate CPU usage
                 TimeSpan start = System.Diagnostics.Process.GetCurrentProcess().TotalProcessorTime;
                 System.Threading.Thread.Sleep(100);
                 TimeSpan end = System.Diagnostics.Process.GetCurrentProcess().TotalProcessorTime;
-        
+
 
                 // Calculate read/write KB/Sec and get total sessions count
                 ArrayList allSessions = new ArrayList(this.Server.MailServer.Sessions);
-                int  smtpSessions  = 0;
-                int  pop3Sessions  = 0;
-                int  imapSessions  = 0;
-                int  relaySessions = 0;                
-                long startReads    = 0;
-                long startWrites   = 0;
-                foreach(object session in allSessions){
-                    try{
-                        if(session is SMTP_Session){
-                            startReads  += ((SMTP_Session)session).TcpStream.BytesReaded;
+                int smtpSessions = 0;
+                int pop3Sessions = 0;
+                int imapSessions = 0;
+                int relaySessions = 0;
+                long startReads = 0;
+                long startWrites = 0;
+                foreach (object session in allSessions)
+                {
+                    try
+                    {
+                        if (session is SMTP_Session)
+                        {
+                            startReads += ((SMTP_Session)session).TcpStream.BytesReaded;
                             startWrites += ((SMTP_Session)session).TcpStream.BytesWritten;
                             smtpSessions++;
                         }
-                        else if(session is POP3_Session){
-                            startReads  += ((POP3_Session)session).TcpStream.BytesReaded;
+                        else if (session is POP3_Session)
+                        {
+                            startReads += ((POP3_Session)session).TcpStream.BytesReaded;
                             startWrites += ((POP3_Session)session).TcpStream.BytesWritten;
                             pop3Sessions++;
                         }
-                        else if(session is IMAP_Session){
-                            startReads  += ((IMAP_Session)session).TcpStream.BytesReaded;
+                        else if (session is IMAP_Session)
+                        {
+                            startReads += ((IMAP_Session)session).TcpStream.BytesReaded;
                             startWrites += ((IMAP_Session)session).TcpStream.BytesWritten;
                             imapSessions++;
                         }
-                        else if(session is Relay_Session){
-                            startReads  += ((Relay_Session)session).TcpStream.BytesReaded;
+                        else if (session is Relay_Session)
+                        {
+                            startReads += ((Relay_Session)session).TcpStream.BytesReaded;
                             startWrites += ((Relay_Session)session).TcpStream.BytesWritten;
                             relaySessions++;
                         }
                     }
-                    catch{
+                    catch
+                    {
                     }
                 }
                 System.Threading.Thread.Sleep(200);
-                long endReads  = 0;
+                long endReads = 0;
                 long endWrites = 0;
-                foreach(object session in allSessions){
-                    try{
-                        if(session is SMTP_Session){
-                            endReads  += ((SMTP_Session)session).TcpStream.BytesReaded;
+                foreach (object session in allSessions)
+                {
+                    try
+                    {
+                        if (session is SMTP_Session)
+                        {
+                            endReads += ((SMTP_Session)session).TcpStream.BytesReaded;
                             endWrites += ((SMTP_Session)session).TcpStream.BytesWritten;
                         }
-                        else if(session is POP3_Session){
-                            endReads  += ((POP3_Session)session).TcpStream.BytesReaded;
+                        else if (session is POP3_Session)
+                        {
+                            endReads += ((POP3_Session)session).TcpStream.BytesReaded;
                             endWrites += ((POP3_Session)session).TcpStream.BytesWritten;
                         }
-                        else if(session is IMAP_Session){
-                            endReads  += ((IMAP_Session)session).TcpStream.BytesReaded;
+                        else if (session is IMAP_Session)
+                        {
+                            endReads += ((IMAP_Session)session).TcpStream.BytesReaded;
                             endWrites += ((IMAP_Session)session).TcpStream.BytesWritten;
                         }
-                        else if(session is Relay_Session){
-                            endReads  += ((Relay_Session)session).TcpStream.BytesReaded;
+                        else if (session is Relay_Session)
+                        {
+                            endReads += ((Relay_Session)session).TcpStream.BytesReaded;
                             endWrites += ((Relay_Session)session).TcpStream.BytesWritten;
                         }
                     }
-                    catch{
+                    catch
+                    {
                     }
                 }
 
 
                 DataRow dr = ds.Tables["ServerInfo"].NewRow();
-                dr["OS"]                = Environment.OSVersion.Platform.ToString();
+                dr["OS"] = Environment.OSVersion.Platform.ToString();
                 dr["MailServerVersion"] = "0.93";
-                dr["MemoryUsage"]       = (System.Diagnostics.Process.GetCurrentProcess().WorkingSet64 / 1000000);
-                dr["CpuUsage"]          = Math.Min((int)(((decimal)(end - start).Milliseconds / 100) * 100),100);
-                dr["ServerStartTime"]   = this.Server.MailServer.StartTime;
-                dr["Read_KB_Sec"]       = Math.Max((endReads - startReads) * 5,0) / 1000;
-                dr["Write_KB_Sec"]      = Math.Max((endWrites - startWrites) * 5,0) / 1000;
-                dr["SmtpSessions"]      = smtpSessions;
-                dr["Pop3Sessions"]      = pop3Sessions;
-                dr["ImapSessions"]      = imapSessions;
-                dr["RelaySessions"]     = relaySessions;
+                dr["MemoryUsage"] = (System.Diagnostics.Process.GetCurrentProcess().WorkingSet64 / 1000000);
+                dr["CpuUsage"] = Math.Min((int)(((decimal)(end - start).Milliseconds / 100) * 100), 100);
+                dr["ServerStartTime"] = this.Server.MailServer.StartTime;
+                dr["Read_KB_Sec"] = Math.Max((endReads - startReads) * 5, 0) / 1000;
+                dr["Write_KB_Sec"] = Math.Max((endWrites - startWrites) * 5, 0) / 1000;
+                dr["SmtpSessions"] = smtpSessions;
+                dr["Pop3Sessions"] = pop3Sessions;
+                dr["ImapSessions"] = imapSessions;
+                dr["RelaySessions"] = relaySessions;
                 ds.Tables["ServerInfo"].Rows.Add(dr);
-              
+
                 // Compress data
                 byte[] dsZipped = CompressDataSet(ds);
 
                 WriteLine("+OK " + dsZipped.Length);
                 Write(dsZipped);
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -907,7 +964,8 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
+            try
+            {
                 DataSet ds = new DataSet("dsIPs");
                 ds.Tables.Add("dsIPs");
                 ds.Tables["dsIPs"].Columns.Add("IP");
@@ -923,22 +981,23 @@ namespace LumiSoft.MailServer.Monitoring
                 // Add IPv6 entries if OS support IPv6
                 // FIX ME: mono won't support this property yet
                 //if(System.Net.Sockets.Socket.OSSupportsIPv6){
-                    // Add IPv6 Any
-                    dr = ds.Tables["dsIPs"].NewRow();
-                    dr["IP"] = IPAddress.IPv6Any.ToString();
-                    ds.Tables["dsIPs"].Rows.Add(dr);
-                    // Add IPv6 localhost
-                    dr = ds.Tables["dsIPs"].NewRow();
-                    dr["IP"] = IPAddress.IPv6Loopback.ToString();
-                    ds.Tables["dsIPs"].Rows.Add(dr);
+                // Add IPv6 Any
+                dr = ds.Tables["dsIPs"].NewRow();
+                dr["IP"] = IPAddress.IPv6Any.ToString();
+                ds.Tables["dsIPs"].Rows.Add(dr);
+                // Add IPv6 localhost
+                dr = ds.Tables["dsIPs"].NewRow();
+                dr["IP"] = IPAddress.IPv6Loopback.ToString();
+                ds.Tables["dsIPs"].Rows.Add(dr);
                 //}
-                
-                IPHostEntry hostInfo = Dns.GetHostEntry(Dns.GetHostName());			
-		        foreach(IPAddress ip in hostInfo.AddressList){
+
+                IPHostEntry hostInfo = Dns.GetHostEntry(Dns.GetHostName());
+                foreach (IPAddress ip in hostInfo.AddressList)
+                {
                     dr = ds.Tables["dsIPs"].NewRow();
                     dr["IP"] = ip.ToString();
                     ds.Tables["dsIPs"].Rows.Add(dr);
-			    }
+                }
 
                 // Compress data
                 byte[] dsZipped = CompressDataSet(ds);
@@ -946,7 +1005,8 @@ namespace LumiSoft.MailServer.Monitoring
                 WriteLine("+OK " + dsZipped.Length);
                 Write(dsZipped);
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -964,50 +1024,63 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ',true);
-                if(args.Length != 1){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ', true);
+                if (args.Length != 1)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: KillSession \"<sessionID>\"");
                     return;
                 }
 
-                foreach(object session in this.Server.MailServer.Sessions){
-                    if(session is SMTP_Session){
+                foreach (object session in this.Server.MailServer.Sessions)
+                {
+                    if (session is SMTP_Session)
+                    {
                         SMTP_Session s = (SMTP_Session)session;
-                        if(s.ID == args[0]){
-                            s.Disconnect();                            
+                        if (s.ID == args[0])
+                        {
+                            s.Disconnect();
                             WriteLine("+OK");
                             return;
                         }
                     }
-                    else if(session is POP3_Session){
+                    else if (session is POP3_Session)
+                    {
                         POP3_Session s = (POP3_Session)session;
-                        if(s.ID == args[0]){
-                            s.Disconnect();                        
+                        if (s.ID == args[0])
+                        {
+                            s.Disconnect();
                             WriteLine("+OK");
                             return;
                         }
                     }
-                    else if(session is IMAP_Session){
+                    else if (session is IMAP_Session)
+                    {
                         IMAP_Session s = (IMAP_Session)session;
-                        if(s.ID == args[0]){
-                            s.Disconnect();                        
+                        if (s.ID == args[0])
+                        {
+                            s.Disconnect();
                             WriteLine("+OK");
                             return;
                         }
                     }
-                    else if(session is Relay_Session){
+                    else if (session is Relay_Session)
+                    {
                         Relay_Session s = (Relay_Session)session;
-                        if(s.ID == args[0]){
-                            s.Disconnect("500 Session killed by administrator.");                            
+                        if (s.ID == args[0])
+                        {
+                            s.Disconnect("500 Session killed by administrator.");
                             WriteLine("+OK");
                             return;
                         }
                     }
-                    else if(session is MonitoringServerSession){
+                    else if (session is MonitoringServerSession)
+                    {
                         MonitoringServerSession s = (MonitoringServerSession)session;
-                        if(s.ID == args[0]){
-                            s.Disconnect();                            
+                        if (s.ID == args[0])
+                        {
+                            s.Disconnect();
                             WriteLine("+OK");
                             return;
                         }
@@ -1016,7 +1089,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("+OK");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -1035,16 +1109,17 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
+            try
+            {
                 DataSet ds = new DataSet();
-			    DataTable dt = ds.Tables.Add("Sessions");
-            //  dt.Columns.Add("VirtualServer");
-			    dt.Columns.Add("SessionType");
-			    dt.Columns.Add("SessionID");
-			    dt.Columns.Add("UserName");
-			    dt.Columns.Add("LocalEndPoint");
-			    dt.Columns.Add("RemoteEndPoint");
-			    dt.Columns.Add("SessionStartTime",typeof(DateTime));
+                DataTable dt = ds.Tables.Add("Sessions");
+                //  dt.Columns.Add("VirtualServer");
+                dt.Columns.Add("SessionType");
+                dt.Columns.Add("SessionID");
+                dt.Columns.Add("UserName");
+                dt.Columns.Add("LocalEndPoint");
+                dt.Columns.Add("RemoteEndPoint");
+                dt.Columns.Add("SessionStartTime", typeof(DateTime));
                 dt.Columns.Add("ExpectedTimeout").DefaultValue = 0;
                 dt.Columns.Add("SessionLog");
                 dt.Columns.Add("ReadedCount").DefaultValue = 0;
@@ -1057,97 +1132,109 @@ namespace LumiSoft.MailServer.Monitoring
 
                 // Store inital Readed Written count. That is needed for transfer ratre calculation.
                 Hashtable transferRatesHolder = new Hashtable();
-                foreach(object session in allSessions){
-                    if(session is SMTP_Session){
-                        transferRatesHolder.Add(session,new object[]{((SMTP_Session)session).TcpStream.BytesReaded,((SMTP_Session)session).TcpStream.BytesWritten});
+                foreach (object session in allSessions)
+                {
+                    if (session is SMTP_Session)
+                    {
+                        transferRatesHolder.Add(session, new object[] { ((SMTP_Session)session).TcpStream.BytesReaded, ((SMTP_Session)session).TcpStream.BytesWritten });
                     }
-                    else if(session is POP3_Session){
-                        transferRatesHolder.Add(session,new object[]{((POP3_Session)session).TcpStream.BytesReaded,((POP3_Session)session).TcpStream.BytesWritten});
+                    else if (session is POP3_Session)
+                    {
+                        transferRatesHolder.Add(session, new object[] { ((POP3_Session)session).TcpStream.BytesReaded, ((POP3_Session)session).TcpStream.BytesWritten });
                     }
-                    else if(session is IMAP_Session){
-                        transferRatesHolder.Add(session,new object[]{((IMAP_Session)session).TcpStream.BytesReaded,((IMAP_Session)session).TcpStream.BytesWritten});
+                    else if (session is IMAP_Session)
+                    {
+                        transferRatesHolder.Add(session, new object[] { ((IMAP_Session)session).TcpStream.BytesReaded, ((IMAP_Session)session).TcpStream.BytesWritten });
                     }
-                    else if(session is Relay_Session){
-                        transferRatesHolder.Add(session,new object[]{((Relay_Session)session).TcpStream.BytesReaded,((Relay_Session)session).TcpStream.BytesWritten});
+                    else if (session is Relay_Session)
+                    {
+                        transferRatesHolder.Add(session, new object[] { ((Relay_Session)session).TcpStream.BytesReaded, ((Relay_Session)session).TcpStream.BytesWritten });
                     }
-                    else if(session is MonitoringServerSession){
-                        transferRatesHolder.Add(session,new object[]{((MonitoringServerSession)session).TcpStream.BytesReaded,((MonitoringServerSession)session).TcpStream.BytesWritten});
+                    else if (session is MonitoringServerSession)
+                    {
+                        transferRatesHolder.Add(session, new object[] { ((MonitoringServerSession)session).TcpStream.BytesReaded, ((MonitoringServerSession)session).TcpStream.BytesWritten });
                     }
                 }
                 // Sleep 1 sec
                 System.Threading.Thread.Sleep(1000);
-               
-                foreach(object session in allSessions){
-                    try{
-                        if(session is SMTP_Session){
+
+                foreach (object session in allSessions)
+                {
+                    try
+                    {
+                        if (session is SMTP_Session)
+                        {
                             SMTP_Session smtpSession = (SMTP_Session)session;
 
                             DataRow dr = dt.NewRow();
-					        dr["SessionType"]        = "SMTP";
-					        dr["SessionID"]          = smtpSession.ID;
-					        dr["UserName"]           = smtpSession.AuthenticatedUserIdentity == null ? "" : smtpSession.AuthenticatedUserIdentity.Name;
-					        dr["LocalEndPoint"]      = ObjectToString(smtpSession.LocalEndPoint);
-					        dr["RemoteEndPoint"]     = ObjectToString(smtpSession.RemoteEndPoint);
-					        dr["SessionStartTime"]   = smtpSession.ConnectTime;
-                            dr["ExpectedTimeout"]    = smtpSession.Server.SessionIdleTimeout - (DateTime.Now - smtpSession.TcpStream.LastActivity).TotalSeconds;
-                            dr["SessionLog"]         = "<obsolete: switch to log file in UI>";
-                            dr["ReadedCount"]        = smtpSession.TcpStream.BytesReaded;
-                            dr["WrittenCount"]       = smtpSession.TcpStream.BytesWritten;                    
-                            dr["ReadTransferRate"]   = smtpSession.TcpStream.BytesReaded - ((long)((object[])transferRatesHolder[session])[0]);
-                            dr["WriteTransferRate"]  = smtpSession.TcpStream.BytesWritten - ((long)((object[])transferRatesHolder[session])[1]);
-                            dr["IsSecureConnection"] = smtpSession.IsSecureConnection;  
+                            dr["SessionType"] = "SMTP";
+                            dr["SessionID"] = smtpSession.ID;
+                            dr["UserName"] = smtpSession.AuthenticatedUserIdentity == null ? "" : smtpSession.AuthenticatedUserIdentity.Name;
+                            dr["LocalEndPoint"] = ObjectToString(smtpSession.LocalEndPoint);
+                            dr["RemoteEndPoint"] = ObjectToString(smtpSession.RemoteEndPoint);
+                            dr["SessionStartTime"] = smtpSession.ConnectTime;
+                            dr["ExpectedTimeout"] = smtpSession.Server.SessionIdleTimeout - (DateTime.Now - smtpSession.TcpStream.LastActivity).TotalSeconds;
+                            dr["SessionLog"] = "<obsolete: switch to log file in UI>";
+                            dr["ReadedCount"] = smtpSession.TcpStream.BytesReaded;
+                            dr["WrittenCount"] = smtpSession.TcpStream.BytesWritten;
+                            dr["ReadTransferRate"] = smtpSession.TcpStream.BytesReaded - ((long)((object[])transferRatesHolder[session])[0]);
+                            dr["WriteTransferRate"] = smtpSession.TcpStream.BytesWritten - ((long)((object[])transferRatesHolder[session])[1]);
+                            dr["IsSecureConnection"] = smtpSession.IsSecureConnection;
                             dt.Rows.Add(dr);
                         }
-                        else if(session is POP3_Session){
+                        else if (session is POP3_Session)
+                        {
                             POP3_Session pop3Session = (POP3_Session)session;
 
                             DataRow dr = dt.NewRow();
-					        dr["SessionType"]        = "POP3";
-					        dr["SessionID"]          = pop3Session.ID;
-					        dr["UserName"]           = pop3Session.AuthenticatedUserIdentity == null ? "" : pop3Session.AuthenticatedUserIdentity.Name;
-					        dr["LocalEndPoint"]      = ObjectToString(pop3Session.LocalEndPoint);
-					        dr["RemoteEndPoint"]     = ObjectToString(pop3Session.RemoteEndPoint);
-					        dr["SessionStartTime"]   = pop3Session.ConnectTime;
-                            dr["ExpectedTimeout"]    = Convert.ToInt32(pop3Session.Server.SessionIdleTimeout - (DateTime.Now - pop3Session.TcpStream.LastActivity).TotalSeconds);
-                            dr["SessionLog"]         = "<obsolete: switch to log file in UI>";
-                            dr["ReadedCount"]        = pop3Session.TcpStream.BytesReaded;
-                            dr["WrittenCount"]       = pop3Session.TcpStream.BytesWritten;                    
-                            dr["ReadTransferRate"]   = pop3Session.TcpStream.BytesReaded - ((long)((object[])transferRatesHolder[session])[0]);
-                            dr["WriteTransferRate"]  = pop3Session.TcpStream.BytesWritten - ((long)((object[])transferRatesHolder[session])[1]);
+                            dr["SessionType"] = "POP3";
+                            dr["SessionID"] = pop3Session.ID;
+                            dr["UserName"] = pop3Session.AuthenticatedUserIdentity == null ? "" : pop3Session.AuthenticatedUserIdentity.Name;
+                            dr["LocalEndPoint"] = ObjectToString(pop3Session.LocalEndPoint);
+                            dr["RemoteEndPoint"] = ObjectToString(pop3Session.RemoteEndPoint);
+                            dr["SessionStartTime"] = pop3Session.ConnectTime;
+                            dr["ExpectedTimeout"] = Convert.ToInt32(pop3Session.Server.SessionIdleTimeout - (DateTime.Now - pop3Session.TcpStream.LastActivity).TotalSeconds);
+                            dr["SessionLog"] = "<obsolete: switch to log file in UI>";
+                            dr["ReadedCount"] = pop3Session.TcpStream.BytesReaded;
+                            dr["WrittenCount"] = pop3Session.TcpStream.BytesWritten;
+                            dr["ReadTransferRate"] = pop3Session.TcpStream.BytesReaded - ((long)((object[])transferRatesHolder[session])[0]);
+                            dr["WriteTransferRate"] = pop3Session.TcpStream.BytesWritten - ((long)((object[])transferRatesHolder[session])[1]);
                             dr["IsSecureConnection"] = pop3Session.IsSecureConnection;
-					        dt.Rows.Add(dr);
+                            dt.Rows.Add(dr);
                         }
-                        else if(session is IMAP_Session){
+                        else if (session is IMAP_Session)
+                        {
                             IMAP_Session imapSession = (IMAP_Session)session;
 
                             DataRow dr = dt.NewRow();
-					        dr["SessionType"]        = "IMAP";
-					        dr["SessionID"]          = imapSession.ID;
-					        dr["UserName"]           = imapSession.AuthenticatedUserIdentity == null ? "" : imapSession.AuthenticatedUserIdentity.Name;
-					        dr["LocalEndPoint"]      = ObjectToString(imapSession.LocalEndPoint);
-					        dr["RemoteEndPoint"]     = ObjectToString(imapSession.RemoteEndPoint);
-					        dr["SessionStartTime"]   = imapSession.ConnectTime;
-                            dr["ExpectedTimeout"]    = Convert.ToInt32(imapSession.Server.SessionIdleTimeout - (DateTime.Now - imapSession.TcpStream.LastActivity).TotalSeconds);
-                            dr["ReadedCount"]        = imapSession.TcpStream.BytesReaded;
-                            dr["WrittenCount"]       = imapSession.TcpStream.BytesWritten;                    
-                            dr["ReadTransferRate"]   = imapSession.TcpStream.BytesReaded - ((long)((object[])transferRatesHolder[session])[0]);
-                            dr["WriteTransferRate"]  = imapSession.TcpStream.BytesWritten - ((long)((object[])transferRatesHolder[session])[1]);
+                            dr["SessionType"] = "IMAP";
+                            dr["SessionID"] = imapSession.ID;
+                            dr["UserName"] = imapSession.AuthenticatedUserIdentity == null ? "" : imapSession.AuthenticatedUserIdentity.Name;
+                            dr["LocalEndPoint"] = ObjectToString(imapSession.LocalEndPoint);
+                            dr["RemoteEndPoint"] = ObjectToString(imapSession.RemoteEndPoint);
+                            dr["SessionStartTime"] = imapSession.ConnectTime;
+                            dr["ExpectedTimeout"] = Convert.ToInt32(imapSession.Server.SessionIdleTimeout - (DateTime.Now - imapSession.TcpStream.LastActivity).TotalSeconds);
+                            dr["ReadedCount"] = imapSession.TcpStream.BytesReaded;
+                            dr["WrittenCount"] = imapSession.TcpStream.BytesWritten;
+                            dr["ReadTransferRate"] = imapSession.TcpStream.BytesReaded - ((long)((object[])transferRatesHolder[session])[0]);
+                            dr["WriteTransferRate"] = imapSession.TcpStream.BytesWritten - ((long)((object[])transferRatesHolder[session])[1]);
                             dr["IsSecureConnection"] = imapSession.IsSecureConnection;
-					        dt.Rows.Add(dr);
+                            dt.Rows.Add(dr);
                         }
-                        else if(session is Relay_Session){
+                        else if (session is Relay_Session)
+                        {
                             Relay_Session relaySession = (Relay_Session)session;
 
                             DataRow dr = dt.NewRow();
-					        dr["SessionType"]        = "RELAY";
-					        dr["SessionID"]          = relaySession.ID;
-					        dr["UserName"]           = "";
-					        dr["LocalEndPoint"]      = ObjectToString(relaySession.LocalEndPoint);
-					        dr["RemoteEndPoint"]     = ObjectToString(relaySession.RemoteEndPoint);
-					        dr["SessionStartTime"]   = relaySession.SessionCreateTime;
-                            dr["ExpectedTimeout"]    = relaySession.ExpectedTimeout;
+                            dr["SessionType"] = "RELAY";
+                            dr["SessionID"] = relaySession.ID;
+                            dr["UserName"] = "";
+                            dr["LocalEndPoint"] = ObjectToString(relaySession.LocalEndPoint);
+                            dr["RemoteEndPoint"] = ObjectToString(relaySession.RemoteEndPoint);
+                            dr["SessionStartTime"] = relaySession.SessionCreateTime;
+                            dr["ExpectedTimeout"] = relaySession.ExpectedTimeout;
                             // FIX ME:
-                            dr["SessionLog"]         = "Not supported";
+                            dr["SessionLog"] = "Not supported";
                             /*                             
                             if(relaySession.SessionActiveLog != null){
                                 dr["SessionLog"]         = SocketLogger.LogEntriesToString(relaySession.SessionActiveLog,true,true);
@@ -1155,26 +1242,27 @@ namespace LumiSoft.MailServer.Monitoring
                             else{
                                 dr["SessionLog"]     = "<Logging disabled>";
                             }*/
-                            dr["ReadedCount"]        = relaySession.TcpStream.BytesReaded;
-                            dr["WrittenCount"]       = relaySession.TcpStream.BytesWritten;                    
-                            dr["ReadTransferRate"]   = relaySession.TcpStream.BytesReaded - ((long)((object[])transferRatesHolder[session])[0]);
-                            dr["WriteTransferRate"]  = relaySession.TcpStream.BytesWritten - ((long)((object[])transferRatesHolder[session])[1]);
+                            dr["ReadedCount"] = relaySession.TcpStream.BytesReaded;
+                            dr["WrittenCount"] = relaySession.TcpStream.BytesWritten;
+                            dr["ReadTransferRate"] = relaySession.TcpStream.BytesReaded - ((long)((object[])transferRatesHolder[session])[0]);
+                            dr["WriteTransferRate"] = relaySession.TcpStream.BytesWritten - ((long)((object[])transferRatesHolder[session])[1]);
                             dr["IsSecureConnection"] = relaySession.IsSecureConnection;
-					        dt.Rows.Add(dr);
+                            dt.Rows.Add(dr);
                         }
-                        else if(session is MonitoringServerSession){
+                        else if (session is MonitoringServerSession)
+                        {
                             MonitoringServerSession mangementSession = (MonitoringServerSession)session;
 
                             DataRow dr = dt.NewRow();
-					        dr["SessionType"]        = "ADMIN";
-					        dr["SessionID"]          = mangementSession.ID;
-					        dr["UserName"]           = mangementSession.AuthenticatedUserIdentity == null ? "" : mangementSession.AuthenticatedUserIdentity.Name;
-					        dr["LocalEndPoint"]      = ObjectToString(mangementSession.LocalEndPoint);
-					        dr["RemoteEndPoint"]     = ObjectToString(mangementSession.RemoteEndPoint);
-					        dr["SessionStartTime"]   = mangementSession.ConnectTime;
-                            dr["ExpectedTimeout"]    = Convert.ToInt32(mangementSession.Server.SessionIdleTimeout - (DateTime.Now - mangementSession.TcpStream.LastActivity).TotalSeconds);
+                            dr["SessionType"] = "ADMIN";
+                            dr["SessionID"] = mangementSession.ID;
+                            dr["UserName"] = mangementSession.AuthenticatedUserIdentity == null ? "" : mangementSession.AuthenticatedUserIdentity.Name;
+                            dr["LocalEndPoint"] = ObjectToString(mangementSession.LocalEndPoint);
+                            dr["RemoteEndPoint"] = ObjectToString(mangementSession.RemoteEndPoint);
+                            dr["SessionStartTime"] = mangementSession.ConnectTime;
+                            dr["ExpectedTimeout"] = Convert.ToInt32(mangementSession.Server.SessionIdleTimeout - (DateTime.Now - mangementSession.TcpStream.LastActivity).TotalSeconds);
                             // FIX ME:
-                            dr["SessionLog"]         = "Not supported";
+                            dr["SessionLog"] = "Not supported";
                             /*                             
                             if(relaySession.SessionActiveLog != null){
                                 dr["SessionLog"]         = SocketLogger.LogEntriesToString(relaySession.SessionActiveLog,true,true);
@@ -1182,16 +1270,17 @@ namespace LumiSoft.MailServer.Monitoring
                             else{
                                 dr["SessionLog"]     = "<Logging disabled>";
                             }*/
-                            dr["ReadedCount"]        = mangementSession.TcpStream.BytesReaded;
-                            dr["WrittenCount"]       = mangementSession.TcpStream.BytesWritten;                    
-                            dr["ReadTransferRate"]   = mangementSession.TcpStream.BytesReaded - ((long)((object[])transferRatesHolder[session])[0]);
-                            dr["WriteTransferRate"]  = mangementSession.TcpStream.BytesWritten - ((long)((object[])transferRatesHolder[session])[1]);
+                            dr["ReadedCount"] = mangementSession.TcpStream.BytesReaded;
+                            dr["WrittenCount"] = mangementSession.TcpStream.BytesWritten;
+                            dr["ReadTransferRate"] = mangementSession.TcpStream.BytesReaded - ((long)((object[])transferRatesHolder[session])[0]);
+                            dr["WriteTransferRate"] = mangementSession.TcpStream.BytesWritten - ((long)((object[])transferRatesHolder[session])[1]);
                             dr["IsSecureConnection"] = mangementSession.IsSecureConnection;
-					        dt.Rows.Add(dr);
+                            dt.Rows.Add(dr);
                         }
                     }
                     // Just skip failed session, session probably terminating.
-                    catch{
+                    catch
+                    {
                     }
                 }
 
@@ -1201,7 +1290,8 @@ namespace LumiSoft.MailServer.Monitoring
                 WriteLine("+OK " + dsZipped.Length);
                 Write(dsZipped);
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -1221,27 +1311,33 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ',true);
-                if(args.Length != 1){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ', true);
+                if (args.Length != 1)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetSipRegistrations \"<virtualServerID>\"");
                     return;
                 }
-                                                
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         DataSet ds = new DataSet("dsSipRegistrations");
                         ds.Tables.Add("SipRegistrations");
                         ds.Tables["SipRegistrations"].Columns.Add("UserName");
                         ds.Tables["SipRegistrations"].Columns.Add("AddressOfRecord");
                         ds.Tables["SipRegistrations"].Columns.Add("Contacts");
 
-                        foreach(SIP_Registration registration in virtualServer.SipServer.Registrar.Registrations){
+                        foreach (SIP_Registration registration in virtualServer.SipServer.Registrar.Registrations)
+                        {
                             DataRow dr = ds.Tables["SipRegistrations"].NewRow();
-                            dr["UserName"]        = registration.UserName;
+                            dr["UserName"] = registration.UserName;
                             dr["AddressOfRecord"] = registration.AOR;
                             string contacts = "";
-                            foreach(SIP_RegistrationBinding contact in registration.Bindings){
+                            foreach (SIP_RegistrationBinding contact in registration.Bindings)
+                            {
                                 contacts += contact.ToContactValue() + "\t";
                             }
                             dr["Contacts"] = contacts;
@@ -1257,9 +1353,10 @@ namespace LumiSoft.MailServer.Monitoring
                     }
                 }
 
-                WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");               
+                WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -1278,28 +1375,35 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ',true);
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ', true);
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetSipRegistration \"<virtualServerID>\" \"<addressOfRecord>\"");
                     return;
                 }
-                                                
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         DataSet ds = new DataSet("dsSipRegistration");
                         ds.Tables.Add("Contacts");
                         ds.Tables["Contacts"].Columns.Add("Value");
 
-                        foreach(SIP_Registration registration in virtualServer.SipServer.Registrar.Registrations){
-                            if(args[1].ToLower() == registration.AOR.ToLower()){                        
-                                foreach(SIP_RegistrationBinding contact in registration.Bindings){
+                        foreach (SIP_Registration registration in virtualServer.SipServer.Registrar.Registrations)
+                        {
+                            if (args[1].ToLower() == registration.AOR.ToLower())
+                            {
+                                foreach (SIP_RegistrationBinding contact in registration.Bindings)
+                                {
                                     DataRow dr = ds.Tables["Contacts"].NewRow();
                                     dr["Value"] = contact.ToContactValue();
                                     ds.Tables["Contacts"].Rows.Add(dr);
                                 }
                                 break;
-                            }                   
+                            }
                         }
 
                         // Compress data
@@ -1311,9 +1415,10 @@ namespace LumiSoft.MailServer.Monitoring
                     }
                 }
 
-                WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");               
+                WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -1330,34 +1435,41 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ',true);
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ', true);
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: SetSipRegistration \"<virtualServerID>\" \"<addressOfRecord>\" \"<contacts>\"");
                     return;
                 }
-                
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         List<SIP_t_ContactParam> contacts = new List<SIP_t_ContactParam>();
-                        foreach(string contact in args[2].Split('\t')){
-                            if(contact.Length > 0){
+                        foreach (string contact in args[2].Split('\t'))
+                        {
+                            if (contact.Length > 0)
+                            {
                                 SIP_t_ContactParam c = new SIP_t_ContactParam();
                                 c.Parse(new LumiSoft.Net.StringReader(contact));
                                 contacts.Add(c);
                             }
                         }
-                        
-                        virtualServer.SipServer.Registrar.SetRegistration(args[1],contacts.ToArray());
-                        
+
+                        virtualServer.SipServer.Registrar.SetRegistration(args[1], contacts.ToArray());
+
                         WriteLine("+OK");
                         return;
-                    }                    
+                    }
                 }
 
-                WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");                
+                WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -1374,17 +1486,23 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ',true);
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ', true);
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteSipRegistration \"<virtualServerID>\" \"<addressOfRecord>\"");
                     return;
                 }
-                
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
-                        foreach(SIP_Registration registration in virtualServer.SipServer.Registrar.Registrations){
-                            if(args[0].ToLower() == registration.AOR.ToLower()){
+
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
+                        foreach (SIP_Registration registration in virtualServer.SipServer.Registrar.Registrations)
+                        {
+                            if (args[0].ToLower() == registration.AOR.ToLower())
+                            {
                                 virtualServer.SipServer.Registrar.DeleteRegistration(registration.AOR);
                                 break;
                             }
@@ -1395,9 +1513,10 @@ namespace LumiSoft.MailServer.Monitoring
                     }
                 }
 
-                WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");                
+                WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -1416,15 +1535,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ',true);
-                if(args.Length != 1){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ', true);
+                if (args.Length != 1)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetSipCalls \"<virtualServerID>\"");
                     return;
                 }
-                                                
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         DataSet ds = new DataSet("dsSipCalls");
                         ds.Tables.Add("SipCalls");
                         ds.Tables["SipCalls"].Columns.Add("CallID");
@@ -1432,11 +1555,12 @@ namespace LumiSoft.MailServer.Monitoring
                         ds.Tables["SipCalls"].Columns.Add("Callee");
                         ds.Tables["SipCalls"].Columns.Add("StartTime");
 
-                        foreach(SIP_B2BUA_Call call in virtualServer.SipServer.B2BUA.Calls){
+                        foreach (SIP_B2BUA_Call call in virtualServer.SipServer.B2BUA.Calls)
+                        {
                             DataRow dr = ds.Tables["SipCalls"].NewRow();
-                            dr["CallID"]    = call.CallID;
-                            dr["Caller"]    = call.CallerDialog.RemoteUri;
-                            dr["Callee"]    = call.CallerDialog.LocalUri;
+                            dr["CallID"] = call.CallID;
+                            dr["Caller"] = call.CallerDialog.RemoteUri;
+                            dr["Callee"] = call.CallerDialog.LocalUri;
                             dr["StartTime"] = call.StartTime;
                             ds.Tables["SipCalls"].Rows.Add(dr);
                         }
@@ -1450,9 +1574,10 @@ namespace LumiSoft.MailServer.Monitoring
                     }
                 }
 
-                WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");               
+                WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -1469,15 +1594,19 @@ namespace LumiSoft.MailServer.Monitoring
                     + ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ',true);
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ', true);
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: TerminateSipCall \"<virtualServerID>\" \"<callID>\"");
                     return;
                 }
-                                                
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.SipServer.B2BUA.GetCallByID(args[1]).Terminate();
 
                         WriteLine("+OK");
@@ -1485,9 +1614,10 @@ namespace LumiSoft.MailServer.Monitoring
                     }
                 }
 
-                WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");               
+                WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -1507,16 +1637,18 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
+            try
+            {
                 DataSet ds = new DataSet("dsEvents");
                 ds.Tables.Add("Events");
                 ds.Tables["Events"].Columns.Add("ID");
                 ds.Tables["Events"].Columns.Add("VirtualServer");
-                ds.Tables["Events"].Columns.Add("CreateDate",typeof(DateTime));
+                ds.Tables["Events"].Columns.Add("CreateDate", typeof(DateTime));
                 ds.Tables["Events"].Columns.Add("Type");
                 ds.Tables["Events"].Columns.Add("Text");
 
-                if(File.Exists(SCore.PathFix(this.Server.MailServer.StartupPath + "\\Settings\\Events.xml"))){
+                if (File.Exists(SCore.PathFix(this.Server.MailServer.StartupPath + "\\Settings\\Events.xml")))
+                {
                     ds.ReadXml(SCore.PathFix(this.Server.MailServer.StartupPath + "\\Settings\\Events.xml"));
                 }
 
@@ -1526,7 +1658,8 @@ namespace LumiSoft.MailServer.Monitoring
                 WriteLine("+OK " + dsZipped.Length);
                 Write(dsZipped);
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -1545,14 +1678,17 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                if(File.Exists(SCore.PathFix(this.Server.MailServer.StartupPath + "\\Settings\\Events.xml"))){
+            try
+            {
+                if (File.Exists(SCore.PathFix(this.Server.MailServer.StartupPath + "\\Settings\\Events.xml")))
+                {
                     File.Delete(SCore.PathFix(this.Server.MailServer.StartupPath + "\\Settings\\Events.xml"));
                 }
 
                 WriteLine("+OK");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -1571,95 +1707,115 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 6){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 6)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetLogSessions <virtualServerID> <service> <limit> \"<startTime>\" \"<endTime>\" \"containsText\"");
                     return;
                 }
 
                 VirtualServer virtualServer = null;
-                foreach(VirtualServer vServer in this.Server.MailServer.VirtualServers){
-                    if(vServer.ID.ToLower() == args[0].ToLower()){                        
+                foreach (VirtualServer vServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (vServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer = vServer;
                         break;
                     }
                 }
-                if(virtualServer == null){
+                if (virtualServer == null)
+                {
                     WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
                 }
 
                 DataSet ds = new DataSet("dsLogsSessions");
                 ds.Tables.Add("LogSessions");
                 ds.Tables["LogSessions"].Columns.Add("SessionID");
-                ds.Tables["LogSessions"].Columns.Add("StartTime",typeof(DateTime));
+                ds.Tables["LogSessions"].Columns.Add("StartTime", typeof(DateTime));
                 ds.Tables["LogSessions"].Columns.Add("RemoteEndPoint");
                 ds.Tables["LogSessions"].Columns.Add("UserName");
-                
-                int      limit        = ConvertEx.ToInt32(args[2]);
-                DateTime startTime    = Convert.ToDateTime(TextUtils.UnQuoteString(args[3]));
-                DateTime endTime      = Convert.ToDateTime(TextUtils.UnQuoteString(args[4]));
-                string   containsText = TextUtils.UnQuoteString(args[5]);
-                
+
+                int limit = ConvertEx.ToInt32(args[2]);
+                DateTime startTime = Convert.ToDateTime(TextUtils.UnQuoteString(args[3]));
+                DateTime endTime = Convert.ToDateTime(TextUtils.UnQuoteString(args[4]));
+                string containsText = TextUtils.UnQuoteString(args[5]);
+
                 string fileName = "";
-                if(args[1] == "SMTP"){
+                if (args[1] == "SMTP")
+                {
                     fileName = virtualServer.SMTP_LogsPath + "smtp";
                 }
-                else if(args[1] == "POP3"){
+                else if (args[1] == "POP3")
+                {
                     fileName = virtualServer.POP3_LogsPath + "pop3";
                 }
-                else if(args[1] == "IMAP"){
+                else if (args[1] == "IMAP")
+                {
                     fileName = virtualServer.IMAP_LogsPath + "imap";
                 }
-                else if(args[1] == "RELAY"){
+                else if (args[1] == "RELAY")
+                {
                     fileName = virtualServer.RELAY_LogsPath + "relay";
                 }
-                else if(args[1] == "FETCH"){
+                else if (args[1] == "FETCH")
+                {
                     fileName = virtualServer.FETCH_LogsPath + "fetch";
                 }
-                else{
+                else
+                {
                     throw new Exception("Invalid <service value> !");
                 }
                 fileName += "-" + startTime.ToString("yyyyMMdd") + ".log";
-                
-         
-                if(File.Exists(fileName)){
-                    using(TextDb db = new TextDb('\t')){
+
+
+                if (File.Exists(fileName))
+                {
+                    using (TextDb db = new TextDb('\t'))
+                    {
                         db.OpenRead(fileName);
 
-                        Dictionary<string,string> processedSessions = new Dictionary<string,string>();
-                        while(db.MoveNext()){
+                        Dictionary<string, string> processedSessions = new Dictionary<string, string>();
+                        while (db.MoveNext())
+                        {
                             string[] row = db.CurrentRow;
-                            if(row.Length == 6){
-                                string   sessionID        = row[0];
+                            if (row.Length == 6)
+                            {
+                                string sessionID = row[0];
                                 DateTime sessionStartTime = Convert.ToDateTime(row[1]);
-                                string   remoteEndPoint   = row[2];
-                                string   userName         = row[3];
-                                string   logText          = row[5];
+                                string remoteEndPoint = row[2];
+                                string userName = row[3];
+                                string logText = row[5];
 
-                                if(!processedSessions.ContainsKey(sessionID)){
+                                if (!processedSessions.ContainsKey(sessionID))
+                                {
                                     //--- Apply fileting criteria ---------------------------------------------//
                                     bool add = true;
-                                    if(startTime > sessionStartTime || endTime < sessionStartTime){
+                                    if (startTime > sessionStartTime || endTime < sessionStartTime)
+                                    {
                                         add = false;
                                     }
-                                    if(containsText.Length > 0 && logText.ToLower().IndexOf(containsText.ToLower()) == -1){
+                                    if (containsText.Length > 0 && logText.ToLower().IndexOf(containsText.ToLower()) == -1)
+                                    {
                                         add = false;
                                     }
-                                    if(processedSessions.Count > limit){                                        
+                                    if (processedSessions.Count > limit)
+                                    {
                                         break;
                                     }
                                     //------------------------------------------------------------------------//
 
-                                    if(add){
+                                    if (add)
+                                    {
                                         DataRow dr = ds.Tables["LogSessions"].NewRow();
-                                        dr["SessionID"]      = sessionID;
-                                        dr["StartTime"]      = sessionStartTime;
+                                        dr["SessionID"] = sessionID;
+                                        dr["StartTime"] = sessionStartTime;
                                         dr["RemoteEndPoint"] = remoteEndPoint;
-                                        dr["UserName"]       = userName;
+                                        dr["UserName"] = userName;
                                         ds.Tables["LogSessions"].Rows.Add(dr);
 
-                                        processedSessions.Add(sessionID,"");
+                                        processedSessions.Add(sessionID, "");
                                     }
                                 }
                             }
@@ -1673,7 +1829,8 @@ namespace LumiSoft.MailServer.Monitoring
                 WriteLine("+OK " + dsZipped.Length);
                 Write(dsZipped);
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -1692,64 +1849,80 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ',true);
-                if(args.Length != 4){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ', true);
+                if (args.Length != 4)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetSessionLog <virtualServerID> <service> \"<sessionID>\" \"<sessionStartDate>\"");
                     return;
                 }
 
                 VirtualServer virtualServer = null;
-                foreach(VirtualServer vServer in this.Server.MailServer.VirtualServers){
-                    if(vServer.ID.ToLower() == args[0].ToLower()){                        
+                foreach (VirtualServer vServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (vServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer = vServer;
                         break;
                     }
                 }
-                if(virtualServer == null){
+                if (virtualServer == null)
+                {
                     WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
                 }
-                                
+
                 DateTime startTime = Convert.ToDateTime(TextUtils.UnQuoteString(args[3]));
 
                 DataSet ds = new DataSet("dsSessionLog");
                 ds.Tables.Add("SessionLog");
                 ds.Tables["SessionLog"].Columns.Add("LogText");
-                
+
                 string fileName = "";
-                if(args[1] == "SMTP"){
+                if (args[1] == "SMTP")
+                {
                     fileName += virtualServer.SMTP_LogsPath + "smtp";
                 }
-                else if(args[1] == "POP3"){
+                else if (args[1] == "POP3")
+                {
                     fileName += virtualServer.POP3_LogsPath + "pop3";
                 }
-                else if(args[1] == "IMAP"){
+                else if (args[1] == "IMAP")
+                {
                     fileName += virtualServer.IMAP_LogsPath + "imap";
                 }
-                else if(args[1] == "RELAY"){
+                else if (args[1] == "RELAY")
+                {
                     fileName += virtualServer.RELAY_LogsPath + "relay";
                 }
-                else if(args[1] == "FETCH"){
+                else if (args[1] == "FETCH")
+                {
                     fileName += virtualServer.FETCH_LogsPath + "fetch";
                 }
-                else{
+                else
+                {
                     throw new Exception("Invalid <service value> !");
                 }
                 fileName += "-" + startTime.ToString("yyyyMMdd") + ".log";
-                
-         
-                if(File.Exists(fileName)){                    
-                    StringBuilder retVal = new StringBuilder();
-                    using(TextDb db = new TextDb('\t')){
-                        db.OpenRead(fileName);
-                                                
-                        while(db.MoveNext()){
-                            string[] row = db.CurrentRow;
-                            if(row.Length == 6){
-                                string sessionID = row[0];
-                                string logText   = row[5];
 
-                                if(sessionID.ToLower() == args[2].ToLower()){
+
+                if (File.Exists(fileName))
+                {
+                    StringBuilder retVal = new StringBuilder();
+                    using (TextDb db = new TextDb('\t'))
+                    {
+                        db.OpenRead(fileName);
+
+                        while (db.MoveNext())
+                        {
+                            string[] row = db.CurrentRow;
+                            if (row.Length == 6)
+                            {
+                                string sessionID = row[0];
+                                string logText = row[5];
+
+                                if (sessionID.ToLower() == args[2].ToLower())
+                                {
                                     retVal.Append(db.CurrentRowString + "\r\n");
                                 }
                             }
@@ -1767,7 +1940,8 @@ namespace LumiSoft.MailServer.Monitoring
                 WriteLine("+OK " + dsZipped.Length);
                 Write(dsZipped);
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -1786,38 +1960,45 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
+            try
+            {
                 DataSet ds = new DataSet();
                 ds.Tables.Add("API");
                 ds.Tables["API"].Columns.Add("AssemblyName");
                 ds.Tables["API"].Columns.Add("TypeName");
-                string[] files = Directory.GetFiles(SCore.PathFix(this.Server.MailServer.StartupPath),"*.dll");
-                foreach(string file in files){
-                    try{
+                string[] files = Directory.GetFiles(SCore.PathFix(this.Server.MailServer.StartupPath), "*.dll");
+                foreach (string file in files)
+                {
+                    try
+                    {
                         Assembly assembly = Assembly.LoadFile(file);
                         Type[] types = assembly.GetTypes();
-                        foreach(Type type in types){
-                            if(type.GetInterface(typeof(IMailServerApi).ToString()) != null){
+                        foreach (Type type in types)
+                        {
+                            if (type.GetInterface(typeof(IMailServerApi).ToString()) != null)
+                            {
                                 DataRow dr = ds.Tables["API"].NewRow();
                                 dr["AssemblyName"] = Path.GetFileName(file);
-                                dr["TypeName"]     = type.ToString();
+                                dr["TypeName"] = type.ToString();
                                 ds.Tables["API"].Rows.Add(dr);
                             }
                         }
                     }
-                    catch{
+                    catch
+                    {
                     }
                 }
-                
+
                 // Compress data
                 byte[] dsZipped = CompressDataSet(ds);
 
                 WriteLine("+OK " + dsZipped.Length);
                 Write(dsZipped);
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
-            }            
+            }
         }
 
         #endregion
@@ -1826,7 +2007,8 @@ namespace LumiSoft.MailServer.Monitoring
 
         private void GetVirtualServers()
         {
-            try{
+            try
+            {
                 DataSet ds = new DataSet();
                 ds.Tables.Add("Servers");
                 ds.Tables["Servers"].Columns.Add("ID");
@@ -1835,10 +2017,13 @@ namespace LumiSoft.MailServer.Monitoring
                 ds.Tables["Servers"].Columns.Add("API_assembly");
                 ds.Tables["Servers"].Columns.Add("API_class");
                 ds.Tables["Servers"].Columns.Add("API_initstring");
-			    ds.ReadXml(SCore.PathFix(this.Server.MailServer.StartupPath + "Settings\\localServers.xml"));
-                foreach(DataRow dr in ds.Tables["Servers"].Rows){
-                    foreach(DataColumn dc in ds.Tables["Servers"].Columns){
-                        if(dr.IsNull(dc)){
+                ds.ReadXml(SCore.PathFix(this.Server.MailServer.StartupPath + "Settings\\localServers.xml"));
+                foreach (DataRow dr in ds.Tables["Servers"].Rows)
+                {
+                    foreach (DataColumn dc in ds.Tables["Servers"].Columns)
+                    {
+                        if (dr.IsNull(dc))
+                        {
                             dr[dc] = dc.DefaultValue;
                         }
                     }
@@ -1850,7 +2035,8 @@ namespace LumiSoft.MailServer.Monitoring
                 WriteLine("+OK " + dsZipped.Length);
                 Write(dsZipped);
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -1867,15 +2053,17 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 6){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 6)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddVirtualServer <ID> <enabled> \"<name>\" \"<assembly>\" \"<type>\" \"<initString>:base64\"");
                     return;
                 }
-                                                
+
                 // Try to load Virtual server
-                this.Server.MailServer.LoadApi(TextUtils.UnQuoteString(args[3]),TextUtils.UnQuoteString(args[4]),System.Text.Encoding.Default.GetString(Convert.FromBase64String(TextUtils.UnQuoteString(args[5]))));
+                this.Server.MailServer.LoadApi(TextUtils.UnQuoteString(args[3]), TextUtils.UnQuoteString(args[4]), System.Text.Encoding.Default.GetString(Convert.FromBase64String(TextUtils.UnQuoteString(args[5]))));
 
                 DataSet ds = new DataSet();
                 ds.Tables.Add("Servers");
@@ -1885,14 +2073,14 @@ namespace LumiSoft.MailServer.Monitoring
                 ds.Tables["Servers"].Columns.Add("API_assembly");
                 ds.Tables["Servers"].Columns.Add("API_class");
                 ds.Tables["Servers"].Columns.Add("API_initstring");
-			    ds.ReadXml(SCore.PathFix(this.Server.MailServer.StartupPath + "Settings\\localServers.xml"));
+                ds.ReadXml(SCore.PathFix(this.Server.MailServer.StartupPath + "Settings\\localServers.xml"));
 
                 DataRow dr = ds.Tables["Servers"].NewRow();
-                dr["ID"]             = args[0];
-                dr["Enabled"]        = args[1];
-                dr["Name"]           = TextUtils.UnQuoteString(args[2]);
-                dr["API_assembly"]   = TextUtils.UnQuoteString(args[3]);
-                dr["API_class"]      = TextUtils.UnQuoteString(args[4]);
+                dr["ID"] = args[0];
+                dr["Enabled"] = args[1];
+                dr["Name"] = TextUtils.UnQuoteString(args[2]);
+                dr["API_assembly"] = TextUtils.UnQuoteString(args[3]);
+                dr["API_class"] = TextUtils.UnQuoteString(args[4]);
                 dr["API_initstring"] = System.Text.Encoding.Default.GetString(Convert.FromBase64String(TextUtils.UnQuoteString(args[5])));
                 ds.Tables["Servers"].Rows.Add(dr);
 
@@ -1903,10 +2091,12 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("+OK");
             }
-            catch(System.Reflection.TargetInvocationException x){
+            catch (System.Reflection.TargetInvocationException x)
+            {
                 WriteLine("-ERR " + x.InnerException.Message);
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -1922,14 +2112,16 @@ namespace LumiSoft.MailServer.Monitoring
                     +OK                     
                     -ERR <errorText>
             */
-            
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 4){
+
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 4)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: UpdateVirtualServer <ID> <enabled> \"<name>\" \"<initString>:base64\"");
                     return;
                 }
-                                    
+
                 DataSet ds = new DataSet();
                 ds.Tables.Add("Servers");
                 ds.Tables["Servers"].Columns.Add("ID");
@@ -1938,12 +2130,15 @@ namespace LumiSoft.MailServer.Monitoring
                 ds.Tables["Servers"].Columns.Add("API_assembly");
                 ds.Tables["Servers"].Columns.Add("API_class");
                 ds.Tables["Servers"].Columns.Add("API_initstring");
-			    ds.ReadXml(SCore.PathFix(this.Server.MailServer.StartupPath + "Settings\\localServers.xml"));
-                if(ds.Tables.Contains("Servers")){
-                    foreach(DataRow dr in ds.Tables["Servers"].Rows){
-                        if(dr["ID"].ToString() == TextUtils.UnQuoteString(args[0])){
-                            dr["Enabled"]        = args[1];
-                            dr["Name"]           = TextUtils.UnQuoteString(args[2]);
+                ds.ReadXml(SCore.PathFix(this.Server.MailServer.StartupPath + "Settings\\localServers.xml"));
+                if (ds.Tables.Contains("Servers"))
+                {
+                    foreach (DataRow dr in ds.Tables["Servers"].Rows)
+                    {
+                        if (dr["ID"].ToString() == TextUtils.UnQuoteString(args[0]))
+                        {
+                            dr["Enabled"] = args[1];
+                            dr["Name"] = TextUtils.UnQuoteString(args[2]);
                             dr["API_initstring"] = System.Text.Encoding.Default.GetString(Convert.FromBase64String(TextUtils.UnQuoteString(args[3])));
                             ds.WriteXml(SCore.PathFix(this.Server.MailServer.StartupPath + "Settings\\localServers.xml"));
 
@@ -1955,10 +2150,12 @@ namespace LumiSoft.MailServer.Monitoring
                     WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
                 }
             }
-            catch(System.Reflection.TargetInvocationException x){
+            catch (System.Reflection.TargetInvocationException x)
+            {
                 WriteLine("-ERR " + x.InnerException.Message);
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -1975,18 +2172,23 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 1){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 1)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteVirtualServer <virtualServerID>");
                     return;
                 }
 
                 DataSet ds = new DataSet();
-			    ds.ReadXml(SCore.PathFix(this.Server.MailServer.StartupPath + "Settings\\localServers.xml"));
-                if(ds.Tables.Contains("Servers")){
-                    foreach(DataRow dr in ds.Tables["Servers"].Rows){
-                        if(dr["ID"].ToString() == TextUtils.UnQuoteString(args[0])){
+                ds.ReadXml(SCore.PathFix(this.Server.MailServer.StartupPath + "Settings\\localServers.xml"));
+                if (ds.Tables.Contains("Servers"))
+                {
+                    foreach (DataRow dr in ds.Tables["Servers"].Rows)
+                    {
+                        if (dr["ID"].ToString() == TextUtils.UnQuoteString(args[0]))
+                        {
                             dr.Delete();
                             ds.WriteXml(SCore.PathFix(this.Server.MailServer.StartupPath + "Settings\\localServers.xml"));
 
@@ -2001,7 +2203,8 @@ namespace LumiSoft.MailServer.Monitoring
                     WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
                 }
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2021,9 +2224,12 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == argsText.ToLower()){
+            try
+            {
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == argsText.ToLower())
+                    {
                         MemoryStream ms = new MemoryStream();
                         virtualServer.API.GetSettings().Table.DataSet.WriteXml(ms);
                         ms.Position = 0;
@@ -2036,7 +2242,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2055,23 +2262,27 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: UpdateSettings <virtualServerID> <dataLength><CRLF><data>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         MemoryStream ms = new MemoryStream();
-                        this.TcpStream.ReadFixedCount(ms,Convert.ToInt32(args[1]));
+                        this.TcpStream.ReadFixedCount(ms, Convert.ToInt32(args[1]));
                         ms.Position = 0;
                         DataSet ds = new DataSet();
                         API_Utlis.CreateSettingsSchema(ds);
                         ds.ReadXml(ms);
                         virtualServer.API.UpdateSettings(ds.Tables["Settings"].Rows[0]);
-                                       
+
                         WriteLine("+OK");
                         return;
                     }
@@ -2079,7 +2290,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2091,12 +2303,15 @@ namespace LumiSoft.MailServer.Monitoring
 
         private void GetDomains(string argsText)
         {
-            try{
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == argsText.ToLower()){
+            try
+            {
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == argsText.ToLower())
+                    {
                         MemoryStream ms = new MemoryStream();
                         DataSet ds = virtualServer.API.GetDomains().Table.DataSet;
-                        
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -2108,7 +2323,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2125,15 +2341,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 4){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 4)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddDomain <virtualServerID> \"<domainID>\" \"<domainName>\" \"<description>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.AddDomain(
                             TextUtils.UnQuoteString(args[1]),
                             TextUtils.UnQuoteString(args[2]),
@@ -2147,7 +2367,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2164,15 +2385,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 4){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 4)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: UpdateDomain <virtualServerID> \"<domainID>\" \"<domainName>\" \"<description>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.UpdateDomain(
                             TextUtils.UnQuoteString(args[1]),
                             TextUtils.UnQuoteString(args[2]),
@@ -2186,7 +2411,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2203,15 +2429,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteDomain <virtualServerID> \"<domainID>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.DeleteDomain(TextUtils.UnQuoteString(args[1]));
 
                         WriteLine("+OK");
@@ -2221,7 +2451,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2233,11 +2464,14 @@ namespace LumiSoft.MailServer.Monitoring
 
         private void GetUsers(string argsText)
         {
-            try{
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == argsText.ToLower()){ 
+            try
+            {
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == argsText.ToLower())
+                    {
                         DataSet ds = virtualServer.API.GetUsers("ALL").Table.DataSet;
-                        
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -2249,7 +2483,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2266,15 +2501,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 9){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 9)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddUser <virtualServerID> \"<userID>\" \"<userName>\" \"<fullName>\" \"<password>\" \"<description>\" <mailboxSize> <enabled> <allowRelay>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.AddUser(
                             TextUtils.UnQuoteString(args[1]),
                             TextUtils.UnQuoteString(args[2]),
@@ -2294,7 +2533,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2311,15 +2551,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 9){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 9)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: UpdateUser <virtualServerID> \"<userID>\" \"<userName>\" \"<fullName>\" \"<password>\" \"<description>\" <mailboxSize> <enabled> <allowRelay>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.UpdateUser(
                             TextUtils.UnQuoteString(args[1]),
                             TextUtils.UnQuoteString(args[2]),
@@ -2339,7 +2583,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2356,15 +2601,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteUser <virtualServerID> \"<userID>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.DeleteUser(TextUtils.UnQuoteString(args[1]));
 
                         WriteLine("+OK");
@@ -2374,7 +2623,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2385,19 +2635,23 @@ namespace LumiSoft.MailServer.Monitoring
 
         private void GetUserEmailAddresses(string argsText)
         {
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetUserEmailAddresses <virtualServerID> <userID>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
 
-                        DataSet ds = DataView_To_DataSet(virtualServer.API.GetUserAddresses(UserName_From_UserID(virtualServer.API.GetUsers("ALL"),args[1])));
-                        
+                        DataSet ds = DataView_To_DataSet(virtualServer.API.GetUserAddresses(UserName_From_UserID(virtualServer.API.GetUsers("ALL"), args[1])));
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -2409,7 +2663,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2426,20 +2681,24 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddUserEmailAddress <virtualServerID> \"<userID>\" \"<emailAddress>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
 
                         MemoryStream ms = new MemoryStream();
-                        virtualServer.API.AddUserAddress(UserName_From_UserID(virtualServer.API.GetUsers("ALL"),TextUtils.UnQuoteString(args[1])),TextUtils.UnQuoteString(args[2]));
-                        
+                        virtualServer.API.AddUserAddress(UserName_From_UserID(virtualServer.API.GetUsers("ALL"), TextUtils.UnQuoteString(args[1])), TextUtils.UnQuoteString(args[2]));
+
                         WriteLine("+OK");
                         return;
                     }
@@ -2447,7 +2706,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2464,20 +2724,24 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteUserEmailAddress <virtualServerID> \"<userID>\" \"<emailAddress>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
 
                         MemoryStream ms = new MemoryStream();
                         virtualServer.API.DeleteUserAddress(TextUtils.UnQuoteString(args[2]));
-                        
+
                         WriteLine("+OK");
                         return;
                     }
@@ -2485,7 +2749,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2505,19 +2770,23 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetUserMessageRules <virtualServerID> \"<userID>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
 
-                        DataSet ds = DataView_To_DataSet(virtualServer.API.GetUserMessageRules(UserName_From_UserID(virtualServer.API.GetUsers("ALL"),TextUtils.UnQuoteString(args[1]))));
-                        
+                        DataSet ds = DataView_To_DataSet(virtualServer.API.GetUserMessageRules(UserName_From_UserID(virtualServer.API.GetUsers("ALL"), TextUtils.UnQuoteString(args[1]))));
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -2529,7 +2798,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2546,15 +2816,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 8){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 8)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddGlobalMessageRule <virtualServerID> \"<userID>\" \"<ruleID>\" <cost> <enabled> \"<description>\" \"<matchExpression>\" <checkNext>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.AddUserMessageRule(
                             TextUtils.UnQuoteString(args[1]),
                             TextUtils.UnQuoteString(args[2]),
@@ -2564,7 +2838,7 @@ namespace LumiSoft.MailServer.Monitoring
                             TextUtils.UnQuoteString(args[5]),
                             TextUtils.UnQuoteString(args[6])
                         );
-                        
+
                         WriteLine("+OK");
                         return;
                     }
@@ -2572,7 +2846,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2589,15 +2864,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 8){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 8)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: UpdateUserMessageRule <virtualServerID> \"<userID>\" \"<ruleID>\" <cost> <enabled> \"<description>\" \"<matchExpression>\" <checkNext>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.UpdateUserMessageRule(
                             TextUtils.UnQuoteString(args[1]),
                             TextUtils.UnQuoteString(args[2]),
@@ -2607,7 +2886,7 @@ namespace LumiSoft.MailServer.Monitoring
                             TextUtils.UnQuoteString(args[5]),
                             TextUtils.UnQuoteString(args[6])
                         );
-                        
+
                         WriteLine("+OK");
                         return;
                     }
@@ -2615,7 +2894,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2632,20 +2912,24 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteUserMessageRule <virtualServerID> \"<userID>\" \"<ruleID>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.DeleteUserMessageRule(
                             TextUtils.UnQuoteString(args[1]),
                             TextUtils.UnQuoteString(args[2])
                         );
-                        
+
                         WriteLine("+OK");
                         return;
                     }
@@ -2653,7 +2937,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2672,17 +2957,21 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetUserMessageRuleActions <virtualServerID> \"<userID>\" \"<messageRuleID>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
-                        DataSet ds = DataView_To_DataSet(virtualServer.API.GetUserMessageRuleActions(TextUtils.UnQuoteString(args[1]),TextUtils.UnQuoteString(args[2])));
-                        
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
+                        DataSet ds = DataView_To_DataSet(virtualServer.API.GetUserMessageRuleActions(TextUtils.UnQuoteString(args[1]), TextUtils.UnQuoteString(args[2])));
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -2694,7 +2983,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2713,15 +3003,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 7){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 7)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddUserMessageRuleAction <virtualServerID> \"<userID>\" \"<messageRuleID>\" \"<messageRuleActionID>\" \"<description>\" <actionType> \"<actionData>:base64\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.AddUserMessageRuleAction(
                             TextUtils.UnQuoteString(args[1]),
                             TextUtils.UnQuoteString(args[2]),
@@ -2730,7 +3024,7 @@ namespace LumiSoft.MailServer.Monitoring
                             (GlobalMessageRuleAction_enum)Convert.ToInt32(args[5]),
                             Convert.FromBase64String(TextUtils.UnQuoteString(args[6]))
                         );
-                        
+
                         WriteLine("+OK");
                         return;
                     }
@@ -2738,7 +3032,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2757,15 +3052,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 7){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 7)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: UpdateUserMessageRuleAction <virtualServerID> \"<messageRuleID>\" \"<messageRuleActionID>\" \"<description>\" <actionType> \"<actionData>:base64\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.UpdateUserMessageRuleAction(
                             TextUtils.UnQuoteString(args[1]),
                             TextUtils.UnQuoteString(args[2]),
@@ -2774,7 +3073,7 @@ namespace LumiSoft.MailServer.Monitoring
                             (GlobalMessageRuleAction_enum)Convert.ToInt32(args[5]),
                             Convert.FromBase64String(TextUtils.UnQuoteString(args[6]))
                         );
-                        
+
                         WriteLine("+OK");
                         return;
                     }
@@ -2782,7 +3081,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2801,21 +3101,25 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length !=4){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 4)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteUserMessageRuleAction <virtualServerID> \"<userID>\" \"<messageRuleID>\" \"<messageRuleActionID>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.DeleteUserMessageRuleAction(
                             TextUtils.UnQuoteString(args[1]),
                             TextUtils.UnQuoteString(args[2]),
                             TextUtils.UnQuoteString(args[3])
                         );
-                        
+
                         WriteLine("+OK");
                         return;
                     }
@@ -2823,7 +3127,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2841,25 +3146,30 @@ namespace LumiSoft.MailServer.Monitoring
                         -ERR <errorText>
                 */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetUserMailboxSize <virtualServerID> <userID>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
 
-                        WriteLine("+OK " + virtualServer.API.GetMailboxSize(UserName_From_UserID(virtualServer.API.GetUsers("ALL"),TextUtils.UnQuoteString(args[1]))).ToString());
+                        WriteLine("+OK " + virtualServer.API.GetMailboxSize(UserName_From_UserID(virtualServer.API.GetUsers("ALL"), TextUtils.UnQuoteString(args[1]))).ToString());
                         return;
                     }
                 }
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2876,25 +3186,30 @@ namespace LumiSoft.MailServer.Monitoring
                         -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetUserLastLoginTime <virtualServerID> <userID>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
 
-                        WriteLine("+OK " + virtualServer.API.GetUserLastLoginTime(UserName_From_UserID(virtualServer.API.GetUsers("ALL"),TextUtils.UnQuoteString(args[1]))).ToString("u"));
+                        WriteLine("+OK " + virtualServer.API.GetUserLastLoginTime(UserName_From_UserID(virtualServer.API.GetUsers("ALL"), TextUtils.UnQuoteString(args[1]))).ToString("u"));
                         return;
                     }
                 }
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2905,28 +3220,33 @@ namespace LumiSoft.MailServer.Monitoring
 
         private void GetUserFolders(string argsText)
         {
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetUserFolders <virtualServerID> <userID>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
 
-                        virtualServer.API.CreateUserDefaultFolders(UserName_From_UserID(virtualServer.API.GetUsers("ALL"),args[1]));
-                        string[] folders = virtualServer.API.GetFolders(UserName_From_UserID(virtualServer.API.GetUsers("ALL"),args[1]),false);
+                        virtualServer.API.CreateUserDefaultFolders(UserName_From_UserID(virtualServer.API.GetUsers("ALL"), args[1]));
+                        string[] folders = virtualServer.API.GetFolders(UserName_From_UserID(virtualServer.API.GetUsers("ALL"), args[1]), false);
                         DataSet ds = new DataSet();
                         DataTable dt = ds.Tables.Add("Folders");
                         dt.Columns.Add("Folder");
-                        foreach(string folder in folders){
+                        foreach (string folder in folders)
+                        {
                             DataRow dr = dt.NewRow();
                             dr["Folder"] = folder;
                             dt.Rows.Add(dr);
                         }
-                        
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -2938,7 +3258,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2955,19 +3276,23 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddUserFolder <virtualServerID> \"<folderOwnerUser>\" \"<folder>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
 
-                        virtualServer.API.CreateFolder("system",TextUtils.UnQuoteString(args[1]),TextUtils.UnQuoteString(args[2]));
-                                            
+                        virtualServer.API.CreateFolder("system", TextUtils.UnQuoteString(args[1]), TextUtils.UnQuoteString(args[2]));
+
                         WriteLine("+OK");
                         return;
                     }
@@ -2975,7 +3300,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -2992,19 +3318,23 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteUserFolder <virtualServerID> \"<folderOwnerUser>\" \"<folder>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
 
-                        virtualServer.API.DeleteFolder("system",TextUtils.UnQuoteString(args[1]),TextUtils.UnQuoteString(args[2]));
-                                            
+                        virtualServer.API.DeleteFolder("system", TextUtils.UnQuoteString(args[1]), TextUtils.UnQuoteString(args[2]));
+
                         WriteLine("+OK");
                         return;
                     }
@@ -3012,7 +3342,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3029,19 +3360,23 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 4){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 4)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: RenameUserFolder <virtualServerID> \"<folderOwnerUser>\" \"<folder>\" \"<newFolder>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
 
-                        virtualServer.API.RenameFolder("system",TextUtils.UnQuoteString(args[1]),TextUtils.UnQuoteString(args[2]),TextUtils.UnQuoteString(args[3]));
-                                            
+                        virtualServer.API.RenameFolder("system", TextUtils.UnQuoteString(args[1]), TextUtils.UnQuoteString(args[2]), TextUtils.UnQuoteString(args[3]));
+
                         WriteLine("+OK");
                         return;
                     }
@@ -3049,7 +3384,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3066,15 +3402,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetUserFolderInfo <virtualServerID> \"<folderOwnerUser>\" \"<folder>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
 
                         List<IMAP_MessageInfo> messages = new List<IMAP_MessageInfo>();
@@ -3087,12 +3427,13 @@ namespace LumiSoft.MailServer.Monitoring
 
                         // Calculate size used
                         long sizeUsed = 0;
-                        foreach(IMAP_MessageInfo message in messages){
+                        foreach (IMAP_MessageInfo message in messages)
+                        {
                             sizeUsed += message.Size;
                         }
 
-                        DateTime creationTime = virtualServer.API.FolderCreationTime(TextUtils.UnQuoteString(args[1]),TextUtils.UnQuoteString(args[2]));
-                                            
+                        DateTime creationTime = virtualServer.API.FolderCreationTime(TextUtils.UnQuoteString(args[1]), TextUtils.UnQuoteString(args[2]));
+
                         WriteLine("+OK \"" + creationTime.ToString("yyyyMMdd HH:mm:ss") + "\" " + messages.Count + " " + sizeUsed + "");
                         return;
                     }
@@ -3100,7 +3441,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3111,15 +3453,19 @@ namespace LumiSoft.MailServer.Monitoring
 
         private void GetUserFolderMessagesInfo(string argsText)
         {
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ',true);
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ', true);
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetUserFolderMessagesInfo <virtualServerID> \"<user>\" \"<folder>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
                         // TODO: handle no existent folder
 
@@ -3127,29 +3473,32 @@ namespace LumiSoft.MailServer.Monitoring
                         ds.Tables.Add("MessagesInfo");
                         ds.Tables["MessagesInfo"].Columns.Add("ID");
                         ds.Tables["MessagesInfo"].Columns.Add("UID");  // REMOVE ME: Now needed for delete message.
-                        ds.Tables["MessagesInfo"].Columns.Add("Size",typeof(long));
+                        ds.Tables["MessagesInfo"].Columns.Add("Size", typeof(long));
                         ds.Tables["MessagesInfo"].Columns.Add("Flags");
                         ds.Tables["MessagesInfo"].Columns.Add("Envelope");
 
                         List<IMAP_MessageInfo> messages = new List<IMAP_MessageInfo>();
-                        virtualServer.API.GetMessagesInfo("system",args[1],args[2],messages);
-                        foreach(IMAP_MessageInfo message in messages){
-                            try{
+                        virtualServer.API.GetMessagesInfo("system", args[1], args[2], messages);
+                        foreach (IMAP_MessageInfo message in messages)
+                        {
+                            try
+                            {
                                 DataRow dr = ds.Tables["MessagesInfo"].NewRow();
-                                dr["ID"]    = message.ID;
-                                dr["UID"]   = message.UID;
-                                dr["Size"]  = message.Size;
-                                dr["Flags"] = Net_Utils.ArrayToString(message.Flags," ");
-                                
-                                EmailMessageItems msgItems = new EmailMessageItems(message.ID,IMAP_MessageItems_enum.Header);
-                                virtualServer.API.GetMessageItems("system",args[1],args[2],msgItems);
+                                dr["ID"] = message.ID;
+                                dr["UID"] = message.UID;
+                                dr["Size"] = message.Size;
+                                dr["Flags"] = Net_Utils.ArrayToString(message.Flags, " ");
+
+                                EmailMessageItems msgItems = new EmailMessageItems(message.ID, IMAP_MessageItems_enum.Header);
+                                virtualServer.API.GetMessageItems("system", args[1], args[2], msgItems);
                                 dr["Envelope"] = IMAP_t_Fetch_r_i_Envelope.ConstructEnvelope(Mail_Message.ParseFromByte(msgItems.Header));
                                 ds.Tables["MessagesInfo"].Rows.Add(dr);
                             }
-                            catch{
+                            catch
+                            {
                             }
                         }
-                        
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -3161,7 +3510,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3181,19 +3531,23 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ',true);
-                if(args.Length != 4){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ', true);
+                if (args.Length != 4)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetUserFolderMessage <virtualServerID> \"<folderOwnerUser>\" \"<folder>\" \"<messageID>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
                         // TODO: handle no existent folder
 
-                        EmailMessageItems msgItems = new EmailMessageItems(args[3],IMAP_MessageItems_enum.Message);
+                        EmailMessageItems msgItems = new EmailMessageItems(args[3], IMAP_MessageItems_enum.Message);
                         virtualServer.API.GetMessageItems(
                             "system",
                             args[1],
@@ -3201,26 +3555,31 @@ namespace LumiSoft.MailServer.Monitoring
                             msgItems
                         );
 
-                        if(msgItems.MessageExists){
-                            try{
+                        if (msgItems.MessageExists)
+                        {
+                            try
+                            {
                                 WriteLine("+OK " + ConvertEx.ToString(msgItems.MessageStream.Length - msgItems.MessageStream.Position));
                                 Write(msgItems.MessageStream);
                             }
-                            finally{
+                            finally
+                            {
                                 msgItems.MessageStream.Close();
                             }
                         }
-                        else{
+                        else
+                        {
                             WriteLine("-ERR Specified message doesn't exist !");
                         }
-                                                
+
                         return;
                     }
                 }
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3241,21 +3600,26 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ',true);
-                if(args.Length != 4){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ', true);
+                if (args.Length != 4)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: StoreUserFolderMessage <virtualServerID> \"<folderOwnerUser>\" \"<folder>\" <sizeInBytes>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
                         // TODO: handle no existent folder
 
                         WriteLine("+OK");
-                        using(MemoryStreamEx messageStream = new MemoryStreamEx(32000)){
-                            this.TcpStream.ReadFixedCount(messageStream,Convert.ToInt32(args[3]));
+                        using (MemoryStreamEx messageStream = new MemoryStreamEx(32000))
+                        {
+                            this.TcpStream.ReadFixedCount(messageStream, Convert.ToInt32(args[3]));
                             messageStream.Position = 0;
                             virtualServer.API.StoreMessage(
                                 "system",
@@ -3263,10 +3627,10 @@ namespace LumiSoft.MailServer.Monitoring
                                 args[2],
                                 messageStream,
                                 DateTime.Now,
-                                new string[]{"Recent"}
+                                new string[] { "Recent" }
                             );
                         }
-                                                
+
                         WriteLine("+OK");
                         return;
                     }
@@ -3274,7 +3638,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3285,15 +3650,19 @@ namespace LumiSoft.MailServer.Monitoring
 
         private void DeleteUserFolderMessage(string argsText)
         {
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ',true);
-                if(args.Length != 5){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ', true);
+                if (args.Length != 5)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteUserFolderMessage <virtualServerID> \"<folderOwnerUser>\" \"<folder>\" \"<ID>\" \"<UID>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
                         // TODO: handle no existent folder
 
@@ -3304,7 +3673,7 @@ namespace LumiSoft.MailServer.Monitoring
                             args[3],
                             ConvertEx.ToInt32(args[4])
                         );
-                                                
+
                         WriteLine("+OK ");
                         return;
                     }
@@ -3312,30 +3681,35 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
 
         #endregion
-        
+
         #region method GetUserRemoteServers
 
         private void GetUserRemoteServers(string argsText)
         {
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetUserRemoteServers <virtualServerID> <userID>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
 
-                        DataSet ds = DataView_To_DataSet(virtualServer.API.GetUserRemoteServers(UserName_From_UserID(virtualServer.API.GetUsers("ALL"),args[1])));
-                        
+                        DataSet ds = DataView_To_DataSet(virtualServer.API.GetUserRemoteServers(UserName_From_UserID(virtualServer.API.GetUsers("ALL"), args[1])));
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -3347,7 +3721,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3364,17 +3739,21 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 10){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 10)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddUserRemoteServer <virtualServerID> \"<remoteServerID>\" \"<userName>\" \"<description>\" \"<remoteHost>\" <remoteHostPort> \"<remoteHostUserName>\" \"<remoteHostPassword>\" <ssl> <enabled>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
-                        
+
                         virtualServer.API.AddUserRemoteServer(
                             TextUtils.UnQuoteString(args[1]),
                             TextUtils.UnQuoteString(args[2]),
@@ -3386,7 +3765,7 @@ namespace LumiSoft.MailServer.Monitoring
                             Convert.ToBoolean(args[8]),
                             Convert.ToBoolean(args[9]
                         ));
-                        
+
                         WriteLine("+OK");
                         return;
                     }
@@ -3394,7 +3773,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3411,19 +3791,23 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteUserRemoteServer <virtualServerID> \"<remoteServerID>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
-                        
+
                         virtualServer.API.DeleteUserRemoteServer(TextUtils.UnQuoteString(args[1]));
-                        
+
                         WriteLine("+OK");
                         return;
                     }
@@ -3431,7 +3815,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3448,17 +3833,21 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 10){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 10)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: UpdateUserRemoteServer <virtualServerID> <userID>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
-                        
+
                         virtualServer.API.UpdateUserRemoteServer(
                             TextUtils.UnQuoteString(args[1]),
                             TextUtils.UnQuoteString(args[2]),
@@ -3470,7 +3859,7 @@ namespace LumiSoft.MailServer.Monitoring
                             Convert.ToBoolean(args[8]),
                             Convert.ToBoolean(args[9]
                         ));
-                        
+
                         WriteLine("+OK");
                         return;
                     }
@@ -3478,7 +3867,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3489,20 +3879,24 @@ namespace LumiSoft.MailServer.Monitoring
 
         private void GetUserFolderAcl(string argsText)
         {
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetUserFolders <virtualServerID> <userID> \"<FolderName>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
                         // TODO: handle no existent folder
 
-                        DataSet ds = DataView_To_DataSet(virtualServer.API.GetFolderACL("system",UserName_From_UserID(virtualServer.API.GetUsers("ALL"),args[1]),TextUtils.UnQuoteString(args[2])));
-                        
+                        DataSet ds = DataView_To_DataSet(virtualServer.API.GetFolderACL("system", UserName_From_UserID(virtualServer.API.GetUsers("ALL"), args[1]), TextUtils.UnQuoteString(args[2])));
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -3514,7 +3908,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3531,21 +3926,25 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 5){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 5)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetUserFolders <virtualServerID> \"<folderOwnerUser>\" \"<folder>\" \"<userOrGroup>\" <flags:int32>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
                         // TODO: handle no existent folder
 
                         MemoryStream ms = new MemoryStream();
-                        virtualServer.API.SetFolderACL("system",TextUtils.UnQuoteString(args[1]),TextUtils.UnQuoteString(args[2]),TextUtils.UnQuoteString(args[3]),IMAP_Flags_SetType.Replace,(IMAP_ACL_Flags)Convert.ToInt32(args[4]));
-                        
+                        virtualServer.API.SetFolderACL("system", TextUtils.UnQuoteString(args[1]), TextUtils.UnQuoteString(args[2]), TextUtils.UnQuoteString(args[3]), IMAP_Flags_SetType.Replace, (IMAP_ACL_Flags)Convert.ToInt32(args[4]));
+
                         WriteLine("+OK");
                         return;
                     }
@@ -3553,7 +3952,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3570,20 +3970,24 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 4){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 4)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteUserFolderAcl <virtualServerID> \"<folderOwnerUser>\" \"<folder>\" \"<userOrGroup>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
                         // TODO: handle no existent folder
-                                               
-                        virtualServer.API.DeleteFolderACL("system",TextUtils.UnQuoteString(args[1]),TextUtils.UnQuoteString(args[2]),TextUtils.UnQuoteString(args[3]));
-                        
+
+                        virtualServer.API.DeleteFolderACL("system", TextUtils.UnQuoteString(args[1]), TextUtils.UnQuoteString(args[2]), TextUtils.UnQuoteString(args[3]));
+
                         WriteLine("+OK");
                         return;
                     }
@@ -3591,14 +3995,15 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
 
         #endregion
 
-       
+
 
         #region method GetUsersDefaultFolders
 
@@ -3611,18 +4016,22 @@ namespace LumiSoft.MailServer.Monitoring
                     
                     + ERR <errorText>
             */
-           
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 1){
+
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 1)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetUsersDefaultFolders <virtualServerID>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         DataSet ds = DataView_To_DataSet(virtualServer.API.GetUsersDefaultFolders());
-                        
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -3634,7 +4043,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3650,21 +4060,25 @@ namespace LumiSoft.MailServer.Monitoring
                     +OK                     
                     -ERR <errorText>
             */
-            
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 3){
+
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddUsersDefaultFolder <virtualServerID> \"<folderName>\" <permanent>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){                        
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.AddUsersDefaultFolder(
                             TextUtils.UnQuoteString(args[1]),
                             ConvertEx.ToBoolean(args[2])
                         );
-                        
+
                         WriteLine("+OK");
                         return;
                     }
@@ -3672,7 +4086,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3688,18 +4103,22 @@ namespace LumiSoft.MailServer.Monitoring
                     +OK                     
                     -ERR <errorText>
             */
-            
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteUsersDefaultFolder <virtualServerID> \"<<folderName>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.DeleteUsersDefaultFolder(TextUtils.UnQuoteString(args[1]));
-                        
+
                         WriteLine("+OK");
                         return;
                     }
@@ -3707,7 +4126,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3719,11 +4139,14 @@ namespace LumiSoft.MailServer.Monitoring
 
         private void GetGroups(string argsText)
         {
-            try{
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == argsText.ToLower()){
+            try
+            {
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == argsText.ToLower())
+                    {
                         DataSet ds = virtualServer.API.GetGroups().Table.DataSet;
-                        
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -3735,7 +4158,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3752,16 +4176,20 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 5){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 5)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: UpdateGroup <virtualServerID> \"<groupID>\" \"<groupName>\" \"<description>\" <enabled>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
-                        virtualServer.API.AddGroup(TextUtils.UnQuoteString(args[1]),TextUtils.UnQuoteString(args[2]),TextUtils.UnQuoteString(args[3]),Convert.ToBoolean(args[4]));
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
+                        virtualServer.API.AddGroup(TextUtils.UnQuoteString(args[1]), TextUtils.UnQuoteString(args[2]), TextUtils.UnQuoteString(args[3]), Convert.ToBoolean(args[4]));
 
                         WriteLine("+OK");
                         return;
@@ -3770,7 +4198,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3787,16 +4216,20 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 5){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 5)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: UpdateGroup <virtualServerID> \"<groupID>\" \"<groupName>\" \"<description>\" <enabled>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
-                        virtualServer.API.UpdateGroup(TextUtils.UnQuoteString(args[1]),TextUtils.UnQuoteString(args[2]),TextUtils.UnQuoteString(args[3]),Convert.ToBoolean(args[4]));
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
+                        virtualServer.API.UpdateGroup(TextUtils.UnQuoteString(args[1]), TextUtils.UnQuoteString(args[2]), TextUtils.UnQuoteString(args[3]), Convert.ToBoolean(args[4]));
 
                         WriteLine("+OK");
                         return;
@@ -3805,7 +4238,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3822,15 +4256,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteGroup <virtualServerID> \"<groupID>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.DeleteGroup(TextUtils.UnQuoteString(args[1]));
 
                         WriteLine("+OK");
@@ -3840,7 +4278,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3851,27 +4290,32 @@ namespace LumiSoft.MailServer.Monitoring
 
         private void GetGroupMembers(string argsText)
         {
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetGroupMembers <virtualServerID> <groupID>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent group
 
-                        string[] members = virtualServer.API.GetGroupMembers(GroupName_From_GroupID(virtualServer.API.GetGroups(),args[1]));
+                        string[] members = virtualServer.API.GetGroupMembers(GroupName_From_GroupID(virtualServer.API.GetGroups(), args[1]));
                         DataSet ds = new DataSet();
                         DataTable dt = ds.Tables.Add("Members");
                         dt.Columns.Add("Member");
-                        foreach(string member in members){
+                        foreach (string member in members)
+                        {
                             DataRow dr = dt.NewRow();
                             dr["Member"] = member;
                             dt.Rows.Add(dr);
                         }
-                        
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -3883,7 +4327,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3900,16 +4345,20 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddGroupMember <virtualServerID> \"<groupID>\" \"<member>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
-                        virtualServer.API.AddGroupMember(GroupName_From_GroupID(virtualServer.API.GetGroups(),TextUtils.UnQuoteString(args[1])),TextUtils.UnQuoteString(args[2]));
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
+                        virtualServer.API.AddGroupMember(GroupName_From_GroupID(virtualServer.API.GetGroups(), TextUtils.UnQuoteString(args[1])), TextUtils.UnQuoteString(args[2]));
 
                         WriteLine("+OK");
                         return;
@@ -3918,7 +4367,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3935,16 +4385,20 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeletGroupMember <virtualServerID> \"<groupID>\" \"<member>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
-                        virtualServer.API.DeleteGroupMember(GroupName_From_GroupID(virtualServer.API.GetGroups(),TextUtils.UnQuoteString(args[1])),TextUtils.UnQuoteString(args[2]));
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
+                        virtualServer.API.DeleteGroupMember(GroupName_From_GroupID(virtualServer.API.GetGroups(), TextUtils.UnQuoteString(args[1])), TextUtils.UnQuoteString(args[2]));
 
                         WriteLine("+OK");
                         return;
@@ -3953,7 +4407,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3965,11 +4420,14 @@ namespace LumiSoft.MailServer.Monitoring
 
         private void GetMailingLists(string argsText)
         {
-            try{
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == argsText.ToLower()){
+            try
+            {
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == argsText.ToLower())
+                    {
                         DataSet ds = virtualServer.API.GetMailingLists("ALL").Table.DataSet;
-                        
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -3981,7 +4439,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -3998,16 +4457,20 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 5){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 5)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddMailingList <virtualServerID> \"<mailingListID>\" \"<mailingListName>\" \"<description>\" <enabled>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
-                        virtualServer.API.AddMailingList(TextUtils.UnQuoteString(args[1]),TextUtils.UnQuoteString(args[2]),TextUtils.UnQuoteString(args[3]),"",Convert.ToBoolean(args[4]));
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
+                        virtualServer.API.AddMailingList(TextUtils.UnQuoteString(args[1]), TextUtils.UnQuoteString(args[2]), TextUtils.UnQuoteString(args[3]), "", Convert.ToBoolean(args[4]));
 
                         WriteLine("+OK");
                         return;
@@ -4016,7 +4479,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4033,16 +4497,20 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 5){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 5)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: UpdateGroup <virtualServerID> \"<mailingListID>\" \"<mailingListName>\" \"<description>\" <enabled>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
-                        virtualServer.API.UpdateMailingList(TextUtils.UnQuoteString(args[1]),TextUtils.UnQuoteString(args[2]),TextUtils.UnQuoteString(args[3]),"",Convert.ToBoolean(args[4]));
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
+                        virtualServer.API.UpdateMailingList(TextUtils.UnQuoteString(args[1]), TextUtils.UnQuoteString(args[2]), TextUtils.UnQuoteString(args[3]), "", Convert.ToBoolean(args[4]));
 
                         WriteLine("+OK");
                         return;
@@ -4051,7 +4519,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4068,15 +4537,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteMailingList <virtualServerID> \"<mailingListID>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.DeleteMailingList(TextUtils.UnQuoteString(args[1]));
 
                         WriteLine("+OK");
@@ -4086,7 +4559,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4097,19 +4571,23 @@ namespace LumiSoft.MailServer.Monitoring
 
         private void GetMailingListMembers(string argsText)
         {
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetMailingListMembers <virtualServerID> <mailignListID>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent mailing list
 
-                        DataSet ds = DataView_To_DataSet(virtualServer.API.GetMailingListAddresses(MailingListName_From_ID(virtualServer.API.GetMailingLists("ALL"),args[1])));
-                        
+                        DataSet ds = DataView_To_DataSet(virtualServer.API.GetMailingListAddresses(MailingListName_From_ID(virtualServer.API.GetMailingLists("ALL"), args[1])));
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -4121,7 +4599,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4138,17 +4617,21 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddMailingListMember <virtualServerID> \"<mailingListID>\" \"<member>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
-                        virtualServer.API.AddMailingListAddress(Guid.NewGuid().ToString(),MailingListName_From_ID(virtualServer.API.GetMailingLists("ALL"),TextUtils.UnQuoteString(args[1])),TextUtils.UnQuoteString(args[2]));
-                        
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
+                        virtualServer.API.AddMailingListAddress(Guid.NewGuid().ToString(), MailingListName_From_ID(virtualServer.API.GetMailingLists("ALL"), TextUtils.UnQuoteString(args[1])), TextUtils.UnQuoteString(args[2]));
+
                         WriteLine("+OK");
                         return;
                     }
@@ -4156,7 +4639,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4173,17 +4657,21 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteMailingListMember <virtualServerID> \"<mailingListID>\" \"<member>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){                        
-                        virtualServer.API.DeleteMailingListAddress(AddressID_From_MailingListMember(virtualServer.API.GetMailingListAddresses(MailingListName_From_ID(virtualServer.API.GetMailingLists("ALL"),TextUtils.UnQuoteString(args[1]))),TextUtils.UnQuoteString(args[2])));
-                        
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
+                        virtualServer.API.DeleteMailingListAddress(AddressID_From_MailingListMember(virtualServer.API.GetMailingListAddresses(MailingListName_From_ID(virtualServer.API.GetMailingLists("ALL"), TextUtils.UnQuoteString(args[1]))), TextUtils.UnQuoteString(args[2])));
+
                         WriteLine("+OK");
                         return;
                     }
@@ -4191,7 +4679,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4202,19 +4691,23 @@ namespace LumiSoft.MailServer.Monitoring
 
         private void GetMailingListAcl(string argsText)
         {
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetMailingListMembers <virtualServerID> <mailignListID>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent mailing list
 
-                        DataSet ds = DataView_To_DataSet(virtualServer.API.GetMailingListACL(MailingListName_From_ID(virtualServer.API.GetMailingLists("ALL"),args[1])));
-                        
+                        DataSet ds = DataView_To_DataSet(virtualServer.API.GetMailingListACL(MailingListName_From_ID(virtualServer.API.GetMailingLists("ALL"), args[1])));
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -4226,7 +4719,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4243,17 +4737,21 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddMailingListAcl <virtualServerID> \"<mailingListID>\" \"<userOrGroup>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
-                        virtualServer.API.AddMailingListACL(MailingListName_From_ID(virtualServer.API.GetMailingLists("ALL"),TextUtils.UnQuoteString(args[1])),TextUtils.UnQuoteString(args[2]));
-                        
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
+                        virtualServer.API.AddMailingListACL(MailingListName_From_ID(virtualServer.API.GetMailingLists("ALL"), TextUtils.UnQuoteString(args[1])), TextUtils.UnQuoteString(args[2]));
+
                         WriteLine("+OK");
                         return;
                     }
@@ -4261,7 +4759,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4278,17 +4777,21 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteMailingListAcl <virtualServerID> \"<mailingListID>\" \"<userOrGroup>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
-                        virtualServer.API.DeleteMailingListACL(MailingListName_From_ID(virtualServer.API.GetMailingLists("ALL"),TextUtils.UnQuoteString(args[1])),TextUtils.UnQuoteString(args[2]));
-                        
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
+                        virtualServer.API.DeleteMailingListACL(MailingListName_From_ID(virtualServer.API.GetMailingLists("ALL"), TextUtils.UnQuoteString(args[1])), TextUtils.UnQuoteString(args[2]));
+
                         WriteLine("+OK");
                         return;
                     }
@@ -4296,7 +4799,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4317,11 +4821,14 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == argsText.ToLower()){
+            try
+            {
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == argsText.ToLower())
+                    {
                         DataSet ds = DataView_To_DataSet(virtualServer.API.GetGlobalMessageRules());
-                        
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -4333,7 +4840,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4350,15 +4858,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 7){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 7)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddGlobalMessageRule <virtualServerID> \"<ruleID>\" <cost> <enabled> \"<description>\" \"<matchExpression>\" <checkNext>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.AddGlobalMessageRule(
                             TextUtils.UnQuoteString(args[1]),
                             Convert.ToInt64(args[2]),
@@ -4367,7 +4879,7 @@ namespace LumiSoft.MailServer.Monitoring
                             TextUtils.UnQuoteString(args[4]),
                             TextUtils.UnQuoteString(args[5])
                         );
-                        
+
                         WriteLine("+OK");
                         return;
                     }
@@ -4375,7 +4887,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4392,15 +4905,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 7){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 7)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: UpdateGlopbalMessageRule <virtualServerID> \"<ruleID>\" <cost> <enabled> \"<description>\" \"<matchExpression>\" <checkNext>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.UpdateGlobalMessageRule(
                             TextUtils.UnQuoteString(args[1]),
                             Convert.ToInt64(args[2]),
@@ -4409,7 +4926,7 @@ namespace LumiSoft.MailServer.Monitoring
                             TextUtils.UnQuoteString(args[4]),
                             TextUtils.UnQuoteString(args[5])
                         );
-                        
+
                         WriteLine("+OK");
                         return;
                     }
@@ -4417,7 +4934,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4434,19 +4952,23 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteGlobalMessageRule <virtualServerID> \"<ruleID>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.DeleteGlobalMessageRule(
                             TextUtils.UnQuoteString(args[1])
                         );
-                        
+
                         WriteLine("+OK");
                         return;
                     }
@@ -4454,7 +4976,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4473,17 +4996,21 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetGlobalMessageRuleActions <virtualServerID> \"<messageRuleID>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         DataSet ds = DataView_To_DataSet(virtualServer.API.GetGlobalMessageRuleActions(TextUtils.UnQuoteString(args[1])));
-                        
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -4495,7 +5022,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4514,15 +5042,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 6){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 6)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddGlobalMessageRuleAction <virtualServerID> \"<messageRuleID>\" \"<messageRuleActionID>\" \"<description>\" <actionType> \"<actionData>:base64\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.AddGlobalMessageRuleAction(
                             TextUtils.UnQuoteString(args[1]),
                             TextUtils.UnQuoteString(args[2]),
@@ -4530,7 +5062,7 @@ namespace LumiSoft.MailServer.Monitoring
                             (GlobalMessageRuleAction_enum)Convert.ToInt32(args[4]),
                             Convert.FromBase64String(TextUtils.UnQuoteString(args[5]))
                         );
-                        
+
                         WriteLine("+OK");
                         return;
                     }
@@ -4538,7 +5070,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4557,15 +5090,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 6){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 6)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: UpdateGlobalMessageRuleAction <virtualServerID> \"<messageRuleID>\" \"<messageRuleActionID>\" \"<description>\" <actionType> \"<actionData>:base64\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.UpdateGlobalMessageRuleAction(
                             TextUtils.UnQuoteString(args[1]),
                             TextUtils.UnQuoteString(args[2]),
@@ -4573,7 +5110,7 @@ namespace LumiSoft.MailServer.Monitoring
                             (GlobalMessageRuleAction_enum)Convert.ToInt32(args[4]),
                             Convert.FromBase64String(TextUtils.UnQuoteString(args[5]))
                         );
-                        
+
                         WriteLine("+OK");
                         return;
                     }
@@ -4581,7 +5118,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4600,17 +5138,21 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteGlobalMessageRuleAction <virtualServerID> \"<messageRuleID>\" \"<messageRuleActionID>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
-                        virtualServer.API.DeleteGlobalMessageRuleAction(TextUtils.UnQuoteString(args[1]),TextUtils.UnQuoteString(args[2]));
-                        
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
+                        virtualServer.API.DeleteGlobalMessageRuleAction(TextUtils.UnQuoteString(args[1]), TextUtils.UnQuoteString(args[2]));
+
                         WriteLine("+OK");
                         return;
                     }
@@ -4618,7 +5160,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4638,11 +5181,14 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == argsText.ToLower()){
+            try
+            {
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == argsText.ToLower())
+                    {
                         DataSet ds = virtualServer.API.GetRoutes().Table.DataSet;
-                        
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -4654,7 +5200,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4671,15 +5218,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 8){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 8)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddRoute <virtualServerID> \"<routeID>\" <cost> \"<description>\" \"<pattern>\" <enabled> <actionType> \"<actionData>:base64\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.AddRoute(
                             TextUtils.UnQuoteString(args[1]),
                             Convert.ToInt64(args[2]),
@@ -4697,7 +5248,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4714,15 +5266,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 8){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 8)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: UpdateRoute <virtualServerID> \"<routeID>\" <cost> \"<description>\" \"<pattern>\" <enabled> <actionType> \"<actionData>:base64\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.UpdateRoute(
                             TextUtils.UnQuoteString(args[1]),
                             Convert.ToInt64(args[2]),
@@ -4740,13 +5296,14 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
 
         #endregion
-        
+
         #region method DeleteRoute
 
         private void DeleteRoute(string argsText)
@@ -4757,15 +5314,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteRoute <virtualServerID> \"<routeID>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.DeleteRoute(TextUtils.UnQuoteString(args[1]));
 
                         WriteLine("+OK");
@@ -4775,7 +5336,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4795,9 +5357,12 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == argsText.ToLower()){
+            try
+            {
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == argsText.ToLower())
+                    {
                         DataSet ds = new DataSet();
                         ds.Tables.Add("SharedFoldersRoots");
                         ds.Tables["SharedFoldersRoots"].Columns.Add("RootID");
@@ -4807,18 +5372,19 @@ namespace LumiSoft.MailServer.Monitoring
                         ds.Tables["SharedFoldersRoots"].Columns.Add("RootType");
                         ds.Tables["SharedFoldersRoots"].Columns.Add("BoundedUser");
                         ds.Tables["SharedFoldersRoots"].Columns.Add("BoundedFolder");
-                        foreach(SharedFolderRoot root in virtualServer.API.GetSharedFolderRoots()){
+                        foreach (SharedFolderRoot root in virtualServer.API.GetSharedFolderRoots())
+                        {
                             DataRow dr = ds.Tables["SharedFoldersRoots"].NewRow();
-                            dr["RootID"]        = root.RootID;
-                            dr["Enabled"]       = root.Enabled;
-                            dr["Folder"]        = root.FolderName;
-                            dr["Description"]   = root.Description;
-                            dr["RootType"]      = (int)root.RootType;
-                            dr["BoundedUser"]   = root.BoundedUser;
+                            dr["RootID"] = root.RootID;
+                            dr["Enabled"] = root.Enabled;
+                            dr["Folder"] = root.FolderName;
+                            dr["Description"] = root.Description;
+                            dr["RootType"] = (int)root.RootType;
+                            dr["BoundedUser"] = root.BoundedUser;
                             dr["BoundedFolder"] = root.BoundedFolder;
                             ds.Tables["SharedFoldersRoots"].Rows.Add(dr);
                         }
-                        
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -4830,7 +5396,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4847,15 +5414,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 8){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 8)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddSharedRootFolder <virtualServerID> \"<rootFolderID>\" \"<rootFolderName>\" \"<description>\" <type> \"<boundedUser>\" \"boundedFolder\" <enabled>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.AddSharedFolderRoot(
                             TextUtils.UnQuoteString(args[1]),
                             Convert.ToBoolean(args[7]),
@@ -4873,7 +5444,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4890,15 +5462,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 8){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 8)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: UpdateSharedRootFolder <virtualServerID> \"<rootFolderID>\" \"<rootFolderName>\" \"<description>\" <type> \"<boundedUser>\" \"boundedFolder\" <enabled>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.UpdateSharedFolderRoot(
                             TextUtils.UnQuoteString(args[1]),
                             Convert.ToBoolean(args[7]),
@@ -4916,7 +5492,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4933,15 +5510,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteSharedRootFolder <virtualServerID> \"<rootFolderID>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.DeleteSharedFolderRoot(TextUtils.UnQuoteString(args[1]));
 
                         WriteLine("+OK");
@@ -4951,7 +5532,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -4971,9 +5553,11 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 1){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 1)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetFilterTypes <virtualServerID>");
                     return;
                 }
@@ -4983,34 +5567,41 @@ namespace LumiSoft.MailServer.Monitoring
                 ds.Tables["Filters"].Columns.Add("AssemblyName");
                 ds.Tables["Filters"].Columns.Add("TypeName");
                 string[] files = Directory.GetFiles(this.Server.MailServer.StartupPath + "Filters");
-                foreach(string file in files){
-                    try{
-                        if(Path.GetExtension(file) == ".exe" || Path.GetExtension(file) == ".dll"){
+                foreach (string file in files)
+                {
+                    try
+                    {
+                        if (Path.GetExtension(file) == ".exe" || Path.GetExtension(file) == ".dll")
+                        {
                             Assembly assembly = Assembly.LoadFile(file);
                             Type[] types = assembly.GetTypes();
-                            foreach(Type type in types){
-                                if(type.GetInterface(typeof(ISmtpMessageFilter).ToString()) != null || type.GetInterface(typeof(ISmtpSenderFilter).ToString()) != null || type.GetInterface(typeof(ISmtpUserMessageFilter).ToString()) != null){
+                            foreach (Type type in types)
+                            {
+                                if (type.GetInterface(typeof(ISmtpMessageFilter).ToString()) != null || type.GetInterface(typeof(ISmtpSenderFilter).ToString()) != null || type.GetInterface(typeof(ISmtpUserMessageFilter).ToString()) != null)
+                                {
                                     DataRow dr = ds.Tables["Filters"].NewRow();
                                     dr["AssemblyName"] = Path.GetFileName(file);
-                                    dr["TypeName"]     = type.ToString();
+                                    dr["TypeName"] = type.ToString();
                                     ds.Tables["Filters"].Rows.Add(dr);
                                 }
                             }
                         }
                     }
-                    catch{
+                    catch
+                    {
                     }
                 }
-                
+
                 // Compress data
                 byte[] dsZipped = CompressDataSet(ds);
 
                 WriteLine("+OK " + dsZipped.Length);
                 Write(dsZipped);
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
-            }            
+            }
         }
 
         #endregion
@@ -5027,11 +5618,14 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == argsText.ToLower()){
+            try
+            {
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == argsText.ToLower())
+                    {
                         DataSet ds = virtualServer.API.GetFilters().Table.DataSet;
-                        
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -5043,7 +5637,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -5060,40 +5655,51 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 7){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 7)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddFilter <virtualServerID> \"<filterID>\" <cost> \"<description>\" \"<assembly>\" \"<filterClass>\" <enabled>");
                     return;
                 }
-                
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         //--- Get filter type ---------------------------------------------------//
                         string type = "";
-                        try{
+                        try
+                        {
                             string assemblyFile = TextUtils.UnQuoteString(args[4]);
-                            if(assemblyFile.IndexOf(":") == -1){
+                            if (assemblyFile.IndexOf(":") == -1)
+                            {
                                 assemblyFile = API_Utlis.PathFix(this.Server.MailServer.StartupPath + "\\Filters\\" + assemblyFile);
                             }
                             System.Reflection.Assembly assembly = System.Reflection.Assembly.LoadFile(assemblyFile);
                             Type t = assembly.GetType(TextUtils.UnQuoteString(args[5]));
-                            if(t == null){
+                            if (t == null)
+                            {
                                 WriteLine("-ERR filterClass contains invalid value !");
                                 return;
                             }
 
-                            if(t.GetInterface("LumiSoft.MailServer.ISmtpMessageFilter") != null){
+                            if (t.GetInterface("LumiSoft.MailServer.ISmtpMessageFilter") != null)
+                            {
                                 type = "ISmtpMessageFilter";
                             }
-                            else if(t.GetInterface("LumiSoft.MailServer.ISmtpSenderFilter") != null){
+                            else if (t.GetInterface("LumiSoft.MailServer.ISmtpSenderFilter") != null)
+                            {
                                 type = "ISmtpSenderFilter";
                             }
-                            else if(t.GetInterface("LumiSoft.MailServer.ISmtpUserMessageFilter") != null){
+                            else if (t.GetInterface("LumiSoft.MailServer.ISmtpUserMessageFilter") != null)
+                            {
                                 type = "ISmtpUserMessageFilter";
                             }
                         }
-                        catch(Exception x){                            
+                        catch (Exception x)
+                        {
                             WriteLine("-ERR " + x.Message);
                             return;
                         }
@@ -5116,7 +5722,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -5133,40 +5740,51 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 7){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 7)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddFilter <virtualServerID> \"<filterID>\" <cost> \"<description>\" \"<assembly>\" \"<filterClass>\" <enabled>");
                     return;
                 }
-                
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         //--- Get filter type ---------------------------------------------------//
                         string type = "";
-                        try{
+                        try
+                        {
                             string assemblyFile = TextUtils.UnQuoteString(args[4]);
-                            if(assemblyFile.IndexOf(":") == -1){
+                            if (assemblyFile.IndexOf(":") == -1)
+                            {
                                 assemblyFile = this.Server.MailServer.StartupPath + "\\Filters\\" + assemblyFile;
                             }
                             System.Reflection.Assembly assembly = System.Reflection.Assembly.LoadFile(assemblyFile);
                             Type t = assembly.GetType(TextUtils.UnQuoteString(args[5]));
-                            if(t == null){
+                            if (t == null)
+                            {
                                 WriteLine("-ERR filterClass contains invalid value !");
                                 return;
                             }
 
-                            if(t.GetInterface("LumiSoft.MailServer.ISmtpMessageFilter") != null){
+                            if (t.GetInterface("LumiSoft.MailServer.ISmtpMessageFilter") != null)
+                            {
                                 type = "ISmtpMessageFilter";
                             }
-                            else if(t.GetInterface("LumiSoft.MailServer.ISmtpSenderFilter") != null){
+                            else if (t.GetInterface("LumiSoft.MailServer.ISmtpSenderFilter") != null)
+                            {
                                 type = "ISmtpSenderFilter";
                             }
-                            else if(t.GetInterface("LumiSoft.MailServer.ISmtpUserMessageFilter") != null){
+                            else if (t.GetInterface("LumiSoft.MailServer.ISmtpUserMessageFilter") != null)
+                            {
                                 type = "ISmtpUserMessageFilter";
                             }
                         }
-                        catch(Exception x){                            
+                        catch (Exception x)
+                        {
                             WriteLine("-ERR " + x.Message);
                             return;
                         }
@@ -5189,7 +5807,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -5206,15 +5825,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteFilter <virtualServerID> \"<filterID>\"");
                     return;
                 }
-                
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.DeleteFilter(TextUtils.UnQuoteString(args[1]));
 
                         WriteLine("+OK");
@@ -5224,7 +5847,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -5244,11 +5868,14 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == argsText.ToLower()){
+            try
+            {
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == argsText.ToLower())
+                    {
                         DataSet ds = virtualServer.API.GetSecurityList().Table.DataSet;
-                        
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -5260,7 +5887,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -5277,15 +5905,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 8){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 8)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: AddIPSecurityEntry <virtualServerID> \"<securityEntryID>\" enabled \"<description>\" <service> <action> \"<startIP>\" \"<endIP>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.AddSecurityEntry(
                             TextUtils.UnQuoteString(args[1]),
                             Convert.ToBoolean(args[2]),
@@ -5303,7 +5935,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -5320,15 +5953,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 8){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 8)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: UpdateIPSecurityEntry <virtualServerID> \"<securityEntryID>\" enabled \"<description>\" <service> <action> \"<startIP>\" \"<endIP>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.UpdateSecurityEntry(
                             TextUtils.UnQuoteString(args[1]),
                             Convert.ToBoolean(args[2]),
@@ -5346,7 +5983,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -5363,15 +6001,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: DeleteIPSecurityEntry <virtualServerID> \"<securityEntryID>\"");
                     return;
                 }
-                
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.DeleteSecurityEntry(TextUtils.UnQuoteString(args[1]));
 
                         WriteLine("+OK");
@@ -5381,7 +6023,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -5401,49 +6044,60 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetQueue <virtualServerID> <queueType>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         DataSet ds = new DataSet();
                         ds.Tables.Add("Queue");
-                        ds.Tables["Queue"].Columns.Add("CreateTime",typeof(DateTime));
+                        ds.Tables["Queue"].Columns.Add("CreateTime", typeof(DateTime));
                         ds.Tables["Queue"].Columns.Add("Header");
 
                         string folder = "";
                         // SMTP queue
-                        if(Convert.ToInt32(args[1]) == 1){
+                        if (Convert.ToInt32(args[1]) == 1)
+                        {
                             folder = virtualServer.MailStorePath + "IncomingSMTP";
                         }
                         // Relay queue
-                        else{
+                        else
+                        {
                             folder = virtualServer.MailStorePath + "Retry";
                         }
-                        string[] files = Directory.GetFiles(folder,"*.eml");
-                        foreach(string file in files){
-                            try{                                
+                        string[] files = Directory.GetFiles(folder, "*.eml");
+                        foreach (string file in files)
+                        {
+                            try
+                            {
                                 string header = "";
-                                using(FileStream fs = new FileStream(file,FileMode.Open,FileAccess.Read,FileShare.Read)){                
+                                using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+                                {
                                     MIME_h_Collection h = new MIME_h_Collection(new MIME_h_Provider());
-                                    h.Parse(new SmartStream(fs,false));
+                                    h.Parse(new SmartStream(fs, false));
 
                                     header = h.ToString();
                                 }
-                                if(header.Length > 2000){
-                                    header = header.Substring(0,2000);
+                                if (header.Length > 2000)
+                                {
+                                    header = header.Substring(0, 2000);
                                 }
 
                                 DataRow dr = ds.Tables["Queue"].NewRow();
                                 dr["CreateTime"] = File.GetCreationTime(file);
-                                dr["Header"]     = header;
+                                dr["Header"] = header;
                                 ds.Tables["Queue"].Rows.Add(dr);
                             }
-                            catch{
+                            catch
+                            {
                             }
                         }
 
@@ -5458,7 +6112,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -5478,15 +6133,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 1){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 1)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetRecycleBinSettings <virtualServerID>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         MemoryStream ms = new MemoryStream();
                         virtualServer.API.GetRecycleBinSettings().DataSet.WriteXml(ms);
                         ms.Position = 0;
@@ -5499,7 +6158,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -5516,15 +6176,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 3){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 3)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: UpdateRecycleBinSettings <virtualServerID> <deleteToRecycleBin> <deleteMessagesAfter>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.UpdateRecycleBinSettings(
                             Convert.ToBoolean(args[1]),
                             Convert.ToInt32(args[2])
@@ -5537,13 +6201,14 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
 
         #endregion
-        
+
         #region method GetRecycleBinMessagesInfo
 
         private void GetRecycleBinMessagesInfo(string argsText)
@@ -5556,17 +6221,21 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ',true);
-                if(args.Length != 4){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ', true);
+                if (args.Length != 4)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetRecycleBinMessagesInfo <virtualServerID> \"<user>\" \"<startDate>\" \"<endDate>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
-                        DataSet ds = virtualServer.API.GetRecycleBinMessagesInfo(args[1],Convert.ToDateTime(args[2]),Convert.ToDateTime(args[3])).Table.DataSet;
-                        
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
+                        DataSet ds = virtualServer.API.GetRecycleBinMessagesInfo(args[1], Convert.ToDateTime(args[2]), Convert.ToDateTime(args[3])).Table.DataSet;
+
                         // Compress data
                         byte[] dsZipped = CompressDataSet(ds);
 
@@ -5578,7 +6247,8 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -5598,35 +6268,42 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ',true);
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ', true);
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: GetRecycleBinMessage <virtualServerID> \"<messageID>\"");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){ 
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         // TODO: handle no existent user
                         // TODO: handle no existent folder
 
-                        
+
                         Stream messageStream = virtualServer.API.GetRecycleBinMessage(args[1]);
-                        try{
+                        try
+                        {
                             WriteLine("+OK " + ConvertEx.ToString(messageStream.Length - messageStream.Position));
                             Write(messageStream);
                         }
-                        finally{
+                        finally
+                        {
                             messageStream.Close();
                         }
-                                                
+
                         return;
                     }
                 }
 
                 WriteLine("-ERR Specified virtual server with ID '" + args[0] + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
@@ -5643,15 +6320,19 @@ namespace LumiSoft.MailServer.Monitoring
                     -ERR <errorText>
             */
 
-            try{
-                string[] args = TextUtils.SplitQuotedString(argsText,' ');
-                if(args.Length != 2){
+            try
+            {
+                string[] args = TextUtils.SplitQuotedString(argsText, ' ');
+                if (args.Length != 2)
+                {
                     WriteLine("-ERR Invalid arguments. Syntax: RestoreRecycleBinMessage <virtualServerID> <messageID>");
                     return;
                 }
 
-                foreach(VirtualServer virtualServer in this.Server.MailServer.VirtualServers){
-                    if(virtualServer.ID.ToLower() == args[0].ToLower()){
+                foreach (VirtualServer virtualServer in this.Server.MailServer.VirtualServers)
+                {
+                    if (virtualServer.ID.ToLower() == args[0].ToLower())
+                    {
                         virtualServer.API.RestoreRecycleBinMessage(args[1]);
 
                         WriteLine("+OK");
@@ -5661,25 +6342,26 @@ namespace LumiSoft.MailServer.Monitoring
 
                 WriteLine("-ERR Specified virtual server with ID '" + argsText + "' doesn't exist !");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 WriteLine("-ERR " + x.Message);
             }
         }
 
         #endregion
-                
 
-		#region method QUIT
 
-		/// <summary>
-		/// QUIT command.
-		/// </summary>
-		private void QUIT()
-		{
-			WriteLine("+OK Service closing transmission channel");
-		}
+        #region method QUIT
 
-		#endregion
+        /// <summary>
+        /// QUIT command.
+        /// </summary>
+        private void QUIT()
+        {
+            WriteLine("+OK Service closing transmission channel");
+        }
+
+        #endregion
 
 
         #region method WriteLine
@@ -5690,7 +6372,8 @@ namespace LumiSoft.MailServer.Monitoring
         /// <param name="line">Line to send.</param>
         private void WriteLine(string line)
         {
-            if(line == null){
+            if (line == null)
+            {
                 throw new ArgumentNullException("line");
             }
 
@@ -5698,7 +6381,7 @@ namespace LumiSoft.MailServer.Monitoring
         }
 
         #endregion
-        
+
         #region method Write
 
         /// <summary>
@@ -5707,11 +6390,12 @@ namespace LumiSoft.MailServer.Monitoring
         /// <param name="data">Data to send.</param>
         private void Write(byte[] data)
         {
-            if(data == null){
+            if (data == null)
+            {
                 throw new ArgumentNullException("data");
             }
 
-            this.TcpStream.Write(data,0,data.Length);
+            this.TcpStream.Write(data, 0, data.Length);
         }
 
         /// <summary>
@@ -5720,11 +6404,12 @@ namespace LumiSoft.MailServer.Monitoring
         /// <param name="stream">Stream data to send.</param>
         private void Write(Stream stream)
         {
-            if(stream == null){
+            if (stream == null)
+            {
                 throw new ArgumentNullException("stream");
             }
 
-            Net_Utils.StreamCopy(stream,this.TcpStream,1024);
+            Net_Utils.StreamCopy(stream, this.TcpStream, 1024);
         }
 
         #endregion
@@ -5738,8 +6423,10 @@ namespace LumiSoft.MailServer.Monitoring
         /// <exception cref="ObjectDisposedException">Is raised when this object is disposed and this property is accessed.</exception>
         public new MonitoringServer Server
         {
-            get{
-                if(this.IsDisposed){
+            get
+            {
+                if (this.IsDisposed)
+                {
                     throw new ObjectDisposedException(this.GetType().Name);
                 }
 
@@ -5753,13 +6440,15 @@ namespace LumiSoft.MailServer.Monitoring
         /// <exception cref="ObjectDisposedException">Is raised when this object is disposed and this property is accessed.</exception>
         public override GenericIdentity AuthenticatedUserIdentity
         {
-	        get{
-                if(this.IsDisposed){
+            get
+            {
+                if (this.IsDisposed)
+                {
                     throw new ObjectDisposedException(this.GetType().Name);
                 }
 
-		        return m_pUser;
-	        }
+                return m_pUser;
+            }
         }
 
         #endregion
@@ -5768,15 +6457,16 @@ namespace LumiSoft.MailServer.Monitoring
         #region method ObjectToString
 
         private string ObjectToString(Object val)
-		{
-			if(val != null){
-				return val.ToString();
-			}
+        {
+            if (val != null)
+            {
+                return val.ToString();
+            }
 
-			return "";
-		}
+            return "";
+        }
 
-		#endregion
+        #endregion
 
         #region merhod CompressDataSet
 
@@ -5789,12 +6479,12 @@ namespace LumiSoft.MailServer.Monitoring
         {
             MemoryStream ms = new MemoryStream();
             ds.WriteXml(ms);
-            
+
             MemoryStream retVal = new MemoryStream();
-            GZipStream gzip = new GZipStream(retVal,CompressionMode.Compress);
+            GZipStream gzip = new GZipStream(retVal, CompressionMode.Compress);
 
             byte[] dsBytes = ms.ToArray();
-            gzip.Write(dsBytes,0,dsBytes.Length);
+            gzip.Write(dsBytes, 0, dsBytes.Length);
             gzip.Flush();
             gzip.Dispose();
 
@@ -5804,10 +6494,12 @@ namespace LumiSoft.MailServer.Monitoring
         #endregion
 
         // REMOVE ME:
-        private string UserName_From_UserID(DataView users,string userID)
+        private string UserName_From_UserID(DataView users, string userID)
         {
-            foreach(DataRowView drV in users){
-                if(string.Equals(drV["UserID"].ToString(),userID,StringComparison.InvariantCultureIgnoreCase)){
+            foreach (DataRowView drV in users)
+            {
+                if (string.Equals(drV["UserID"].ToString(), userID, StringComparison.InvariantCultureIgnoreCase))
+                {
                     return drV["UserName"].ToString();
                 }
             }
@@ -5816,10 +6508,12 @@ namespace LumiSoft.MailServer.Monitoring
         }
 
         // REMOVE ME:
-        private string GroupName_From_GroupID(DataView groups,string groupID)
+        private string GroupName_From_GroupID(DataView groups, string groupID)
         {
-            foreach(DataRowView drV in groups){
-                if(string.Equals(drV["GroupID"].ToString(),groupID)){
+            foreach (DataRowView drV in groups)
+            {
+                if (string.Equals(drV["GroupID"].ToString(), groupID))
+                {
                     return drV["GroupName"].ToString();
                 }
             }
@@ -5828,10 +6522,12 @@ namespace LumiSoft.MailServer.Monitoring
         }
 
         // REMOVE ME:
-        private string MailingListName_From_ID(DataView mailingLists,string mailingListID)
+        private string MailingListName_From_ID(DataView mailingLists, string mailingListID)
         {
-            foreach(DataRowView drV in mailingLists){
-                if(string.Equals(drV["MailingListID"].ToString(),mailingListID,StringComparison.InvariantCultureIgnoreCase)){
+            foreach (DataRowView drV in mailingLists)
+            {
+                if (string.Equals(drV["MailingListID"].ToString(), mailingListID, StringComparison.InvariantCultureIgnoreCase))
+                {
                     return drV["MailingListName"].ToString();
                 }
             }
@@ -5840,10 +6536,12 @@ namespace LumiSoft.MailServer.Monitoring
         }
 
         // REMOVE ME:
-        private string AddressID_From_MailingListMember(DataView mailingListMembers,string member)
+        private string AddressID_From_MailingListMember(DataView mailingListMembers, string member)
         {
-            foreach(DataRowView drV in mailingListMembers){
-                if(string.Equals(drV["Address"].ToString(),member,StringComparison.InvariantCultureIgnoreCase)){
+            foreach (DataRowView drV in mailingListMembers)
+            {
+                if (string.Equals(drV["Address"].ToString(), member, StringComparison.InvariantCultureIgnoreCase))
+                {
                     return drV["AddressID"].ToString();
                 }
             }
@@ -5852,10 +6550,12 @@ namespace LumiSoft.MailServer.Monitoring
         }
 
         // REMOVE ME:
-        private string AddressID_From_UserEmail(DataView userEmails,string emailAddress)
+        private string AddressID_From_UserEmail(DataView userEmails, string emailAddress)
         {
-            foreach(DataRowView drV in userEmails){
-                if(string.Equals(drV["Address"].ToString(),emailAddress,StringComparison.InvariantCultureIgnoreCase)){
+            foreach (DataRowView drV in userEmails)
+            {
+                if (string.Equals(drV["Address"].ToString(), emailAddress, StringComparison.InvariantCultureIgnoreCase))
+                {
                     return drV["AddressID"].ToString();
                 }
             }
@@ -5876,7 +6576,8 @@ namespace LumiSoft.MailServer.Monitoring
             DataTable dt = dv.Table.Clone();
             ds.Tables.Add(dt);
 
-            foreach(DataRowView drV in dv){
+            foreach (DataRowView drV in dv)
+            {
                 dt.ImportRow(drV.Row);
             }
 

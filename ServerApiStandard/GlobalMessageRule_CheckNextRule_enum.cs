@@ -1,9 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace LumiSoft.MailServer
 {
+
+
     /// <summary>
     /// Specified when next rule is checked.
     /// </summary>
@@ -24,4 +23,6 @@ namespace LumiSoft.MailServer
         /// </summary>
         IfNotMatches = 2,
     }
+
+
 }

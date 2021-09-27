@@ -1,25 +1,27 @@
+
 using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Text;
+
 
 namespace LumiSoft.Net.IMAP.Server
 {
+
+
     /// <summary>
     /// Provides data to event GetMessageItems.
     /// </summary>
     public class IMAP_eArgs_MessageItems
     {
-        private IMAP_Session           m_pSession           = null;
-        private IMAP_Message           m_pMessageInfo       = null;
-        private IMAP_MessageItems_enum m_MessageItems       = IMAP_MessageItems_enum.Message;
-        private bool                   m_CloseMessageStream = true;
-        private Stream                 m_MessageStream      = null;
-        private long                   m_MessageStartOffset = 0;
-        private byte[]                 m_Header             = null;
-        private string                 m_Envelope           = null;
-        private string                 m_BodyStructure      = null;
-        private bool                   m_MessageExists      = true;
+        private IMAP_Session m_pSession = null;
+        private IMAP_Message m_pMessageInfo = null;
+        private IMAP_MessageItems_enum m_MessageItems = IMAP_MessageItems_enum.Message;
+        private bool m_CloseMessageStream = true;
+        private Stream m_MessageStream = null;
+        private long m_MessageStartOffset = 0;
+        private byte[] m_Header = null;
+        private string m_Envelope = null;
+        private string m_BodyStructure = null;
+        private bool m_MessageExists = true;
 
         /// <summary>
         /// Default constructor.
@@ -27,9 +29,9 @@ namespace LumiSoft.Net.IMAP.Server
         /// <param name="session">Reference to current IMAP session.</param>
         /// <param name="messageInfo">Message info what message items to get.</param>
         /// <param name="messageItems">Specifies message items what must be filled.</param>
-        public IMAP_eArgs_MessageItems(IMAP_Session session,IMAP_Message messageInfo,IMAP_MessageItems_enum messageItems)
+        public IMAP_eArgs_MessageItems(IMAP_Session session, IMAP_Message messageInfo, IMAP_MessageItems_enum messageItems)
         {
-            m_pSession     = session;
+            m_pSession = session;
             m_pMessageInfo = messageInfo;
             m_MessageItems = messageItems;
         }
@@ -42,54 +44,50 @@ namespace LumiSoft.Net.IMAP.Server
             Dispose();
         }
 
-        #region method Dispose
 
         /// <summary>
         /// Clean up any resources being used.
         /// </summary>
         public void Dispose()
         {
-            if(m_CloseMessageStream && m_MessageStream != null){
+            if (m_CloseMessageStream && m_MessageStream != null)
+            {
                 m_MessageStream.Dispose();
                 m_MessageStream = null;
             }
         }
 
-        #endregion
-
-
-        #region internal method Validate
 
         /// <summary>
         /// Checks that all required data items are provided, if not throws exception.
         /// </summary>
         internal void Validate()
         {
-            if((m_MessageItems & IMAP_MessageItems_enum.BodyStructure) != 0 && m_BodyStructure == null){
+            if ((m_MessageItems & IMAP_MessageItems_enum.BodyStructure) != 0 && m_BodyStructure == null)
+            {
                 throw new Exception("IMAP BODYSTRUCTURE is required, but not provided to IMAP server component !");
             }
-            if((m_MessageItems & IMAP_MessageItems_enum.Envelope) != 0 && m_Envelope == null){
+            if ((m_MessageItems & IMAP_MessageItems_enum.Envelope) != 0 && m_Envelope == null)
+            {
                 throw new Exception("IMAP ENVELOPE is required, but not provided to IMAP server component  !");
             }
-            if((m_MessageItems & IMAP_MessageItems_enum.Header) != 0 && m_Header == null){
+            if ((m_MessageItems & IMAP_MessageItems_enum.Header) != 0 && m_Header == null)
+            {
                 throw new Exception("Message header is required, but not provided to IMAP server component  !");
             }
-            if((m_MessageItems & IMAP_MessageItems_enum.Message) != 0 && m_MessageStream == null){
+            if ((m_MessageItems & IMAP_MessageItems_enum.Message) != 0 && m_MessageStream == null)
+            {
                 throw new Exception("Full message is required, but not provided to IMAP server component  !");
             }
         }
 
-        #endregion
-
-
-        #region Properties Implementation
 
         /// <summary>
         /// Gets reference to current IMAP session.
         /// </summary>
         public IMAP_Session Session
         {
-            get{ return m_pSession; }
+            get { return m_pSession; }
         }
 
         /// <summary>
@@ -97,7 +95,7 @@ namespace LumiSoft.Net.IMAP.Server
         /// </summary>
         public IMAP_Message MessageInfo
         {
-            get{ return m_pMessageInfo; }
+            get { return m_pMessageInfo; }
         }
 
         /// <summary>
@@ -105,7 +103,7 @@ namespace LumiSoft.Net.IMAP.Server
         /// </summary>
         public IMAP_MessageItems_enum MessageItems
         {
-            get{ return m_MessageItems; }
+            get { return m_MessageItems; }
         }
 
         /// <summary>
@@ -114,9 +112,9 @@ namespace LumiSoft.Net.IMAP.Server
         /// </summary>
         public bool CloseMessageStream
         {
-            get{ return m_CloseMessageStream; }
+            get { return m_CloseMessageStream; }
 
-            set{ m_CloseMessageStream = value; }
+            set { m_CloseMessageStream = value; }
         }
 
         /// <summary>
@@ -125,18 +123,23 @@ namespace LumiSoft.Net.IMAP.Server
         /// </summary>
         public Stream MessageStream
         {
-            get{
-                if(m_MessageStream != null){
+            get
+            {
+                if (m_MessageStream != null)
+                {
                     m_MessageStream.Position = m_MessageStartOffset;
                 }
-                return m_MessageStream; 
+                return m_MessageStream;
             }
 
-            set{
-                if(value == null){
+            set
+            {
+                if (value == null)
+                {
                     throw new ArgumentNullException("Property MessageStream value can't be null !");
                 }
-                if(!value.CanSeek){
+                if (!value.CanSeek)
+                {
                     throw new Exception("Stream must support seeking !");
                 }
 
@@ -150,26 +153,31 @@ namespace LumiSoft.Net.IMAP.Server
         /// </summary>
         public long MessageSize
         {
-            get{
-                if(m_MessageStream == null){
+            get
+            {
+                if (m_MessageStream == null)
+                {
                     throw new Exception("You must set MessageStream property first to use this property !");
                 }
-                else{
+                else
+                {
                     return m_MessageStream.Length - m_MessageStream.Position;
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets or sets message main header.
         /// Fill this property only if IMAP_MessageItems_enum.Header flag is specified.
         /// </summary>
         public byte[] Header
         {
-            get{ return m_Header; }
+            get { return m_Header; }
 
-            set{
-                if(value == null){
+            set
+            {
+                if (value == null)
+                {
                     throw new ArgumentNullException("Property Header value can't be null !");
                 }
 
@@ -183,10 +191,12 @@ namespace LumiSoft.Net.IMAP.Server
         /// </summary>
         public string Envelope
         {
-            get{ return m_Envelope; }
+            get { return m_Envelope; }
 
-            set{
-                if(value == null){
+            set
+            {
+                if (value == null)
+                {
                     throw new ArgumentNullException("Property Envelope value can't be null !");
                 }
 
@@ -200,10 +210,12 @@ namespace LumiSoft.Net.IMAP.Server
         /// </summary>
         public string BodyStructure
         {
-            get{ return m_BodyStructure; }
+            get { return m_BodyStructure; }
 
-            set{
-                if(value == null){
+            set
+            {
+                if (value == null)
+                {
                     throw new ArgumentNullException("Property BodyStructure value can't be null !");
                 }
 
@@ -216,12 +228,11 @@ namespace LumiSoft.Net.IMAP.Server
         /// </summary>
         public bool MessageExists
         {
-            get{ return m_MessageExists; }
+            get { return m_MessageExists; }
 
-            set{ m_MessageExists = value; }
+            set { m_MessageExists = value; }
         }
 
-        #endregion
 
     }
 }

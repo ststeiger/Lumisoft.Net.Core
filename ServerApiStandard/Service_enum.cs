@@ -1,9 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace LumiSoft.MailServer
 {
+
+
     /// <summary>
     /// Specifies service
     /// </summary>
@@ -29,4 +28,6 @@ namespace LumiSoft.MailServer
         /// </summary>
         Relay = 4,
     }
+
+
 }

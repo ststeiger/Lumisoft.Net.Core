@@ -7,8 +7,8 @@
 
 namespace Microsof.Data.Sqlite
 {
-  using System;
-  using System.Runtime.InteropServices;
+    using System;
+    using System.Runtime.InteropServices;
 
 
 
@@ -39,48 +39,48 @@ namespace Microsof.Data.Sqlite
     /// the loaded assemblies and initialize them in SQLite as connections are made.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-  public sealed class SqliteFunctionAttribute : Attribute
-  {
-    private string       _name;
-    private int          _arguments;
-    private FunctionType _functionType;
-    internal Type        _instanceType;
-
-    /// <summary>
-    /// Default constructor, initializes the internal variables for the function.
-    /// </summary>
-    public SqliteFunctionAttribute()
+    public sealed class SqliteFunctionAttribute : Attribute
     {
-      Name = "";
-      Arguments = -1;
-      FuncType = FunctionType.Scalar;
-    }
+        private string _name;
+        private int _arguments;
+        private FunctionType _functionType;
+        internal Type _instanceType;
 
-    /// <summary>
-    /// The function's name as it will be used in SQLite command text.
-    /// </summary>
-    public string Name
-    {
-      get { return _name; }
-      set { _name = value; }
-    }
+        /// <summary>
+        /// Default constructor, initializes the internal variables for the function.
+        /// </summary>
+        public SqliteFunctionAttribute()
+        {
+            Name = "";
+            Arguments = -1;
+            FuncType = FunctionType.Scalar;
+        }
 
-    /// <summary>
-    /// The number of arguments this function expects.  -1 if the number of arguments is variable.
-    /// </summary>
-    public int Arguments
-    {
-      get { return _arguments; }
-      set { _arguments = value; }
-    }
+        /// <summary>
+        /// The function's name as it will be used in SQLite command text.
+        /// </summary>
+        public string Name
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
 
-    /// <summary>
-    /// The type of function this implementation will be.
-    /// </summary>
-    public FunctionType FuncType
-    {
-      get { return _functionType; }
-      set { _functionType = value; }
+        /// <summary>
+        /// The number of arguments this function expects.  -1 if the number of arguments is variable.
+        /// </summary>
+        public int Arguments
+        {
+            get { return _arguments; }
+            set { _arguments = value; }
+        }
+
+        /// <summary>
+        /// The type of function this implementation will be.
+        /// </summary>
+        public FunctionType FuncType
+        {
+            get { return _functionType; }
+            set { _functionType = value; }
+        }
     }
-  }
 }

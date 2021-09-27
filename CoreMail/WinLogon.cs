@@ -1,18 +1,22 @@
+
 using System;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
+
 
 namespace LumiSoft.MailServer
 {
+
+
 	/// <summary>
 	/// Windows logon provider.
 	/// </summary>
 	public class WinLogon
 	{
+
+
 		[DllImport("advapi32.dll", SetLastError=true)]
 		private extern static bool LogonUser(string userName,string domainName,string password,int dwLogonType,int dwLogonProvider,ref IntPtr phToken);
 
-        #region static method Logon
 
         /// <summary>
 		/// Logs user to windows.
@@ -38,7 +42,8 @@ namespace LumiSoft.MailServer
 			return false;
         }
 
-        #endregion
 
     }
+
+
 }

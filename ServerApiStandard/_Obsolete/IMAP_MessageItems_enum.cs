@@ -1,9 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace LumiSoft.Net.IMAP.Server
 {
+
+
     /// <summary>
     /// Specifies message itmes.
     /// </summary>
@@ -34,4 +33,6 @@ namespace LumiSoft.Net.IMAP.Server
         /// </summary>
         Message = 16,
     }
+
+
 }

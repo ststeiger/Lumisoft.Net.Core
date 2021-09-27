@@ -1,14 +1,17 @@
-using System;
+
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
 
-using LumiSoft.Net.Mime;
+
 using LumiSoft.Net.MIME;
 using LumiSoft.Net.Mail;
 
+
 namespace LumiSoft.Net.IMAP
 {
+
+
     /// <summary>
     /// IMAP BODYSTRUCTURE. Defined in RFC 3501 7.4.2.
     /// </summary>
@@ -25,33 +28,33 @@ namespace LumiSoft.Net.IMAP
         }
 
 
-        #region static mehtod ConstructBodyStructure
+        /// <summary>
+        /// Constructs FETCH BODY and BODYSTRUCTURE response.
+        /// </summary>
+        /// <param name="message">Mail message.</param>
+        /// <param name="bodystructure">Specifies if to construct BODY or BODYSTRUCTURE.</param>
+        /// <returns></returns>
+        public static string ConstructBodyStructure(Mail_Message message, bool bodystructure)
+        {
+            if (bodystructure)
+            {
+                return "BODYSTRUCTURE " + ConstructParts(message, bodystructure);
+            }
+            else
+            {
+                return "BODY " + ConstructParts(message, bodystructure);
+            }
+        }
 
-		/// <summary>
-		/// Constructs FETCH BODY and BODYSTRUCTURE response.
-		/// </summary>
-		/// <param name="message">Mail message.</param>
-		/// <param name="bodystructure">Specifies if to construct BODY or BODYSTRUCTURE.</param>
-		/// <returns></returns>
-		public static string ConstructBodyStructure(Mail_Message message,bool bodystructure)
-		{			
-			if(bodystructure){
-				return "BODYSTRUCTURE " + ConstructParts(message,bodystructure);
-			}
-			else{
-				return "BODY " + ConstructParts(message,bodystructure);
-			}
-		}
-
-		/// <summary>
-		/// Constructs specified entity and it's childentities bodystructure string.
-		/// </summary>
-		/// <param name="entity">Mime entity.</param>
-		/// <param name="bodystructure">Specifies if to construct BODY or BODYSTRUCTURE.</param>
-		/// <returns></returns>
-		private static string ConstructParts(MIME_Entity entity,bool bodystructure)
-		{
-			/* RFC 3501 7.4.2 BODYSTRUCTURE
+        /// <summary>
+        /// Constructs specified entity and it's childentities bodystructure string.
+        /// </summary>
+        /// <param name="entity">Mime entity.</param>
+        /// <param name="bodystructure">Specifies if to construct BODY or BODYSTRUCTURE.</param>
+        /// <returns></returns>
+        private static string ConstructParts(MIME_Entity entity, bool bodystructure)
+        {
+            /* RFC 3501 7.4.2 BODYSTRUCTURE
 							  BODY A form of BODYSTRUCTURE without extension data.
 			  
 				A parenthesized list that describes the [MIME-IMB] body
@@ -197,63 +200,77 @@ namespace LumiSoft.Net.IMAP
 
 			*/
 
-            MIME_Encoding_EncodedWord wordEncoder = new MIME_Encoding_EncodedWord(MIME_EncodedWordEncoding.B,Encoding.UTF8);
+            MIME_Encoding_EncodedWord wordEncoder = new MIME_Encoding_EncodedWord(MIME_EncodedWordEncoding.B, Encoding.UTF8);
             wordEncoder.Split = false;
 
-			StringBuilder retVal = new StringBuilder();
-			// Multipart message
-			if(entity.Body is MIME_b_Multipart){
-				retVal.Append("(");
+            StringBuilder retVal = new StringBuilder();
+            // Multipart message
+            if (entity.Body is MIME_b_Multipart)
+            {
+                retVal.Append("(");
 
-				// Construct child entities.
-				foreach(MIME_Entity childEntity in ((MIME_b_Multipart)entity.Body).BodyParts){
-					// Construct child entity. This can be multipart or non multipart.
-					retVal.Append(ConstructParts(childEntity,bodystructure));
-				}
-			
-				// Add contentTypeSubMediaType
-                if(entity.ContentType != null && entity.ContentType.SubType != null){
-                    retVal.Append(" \"" + entity.ContentType.SubType + "\"");
+                // Construct child entities.
+                foreach (MIME_Entity childEntity in ((MIME_b_Multipart)entity.Body).BodyParts)
+                {
+                    // Construct child entity. This can be multipart or non multipart.
+                    retVal.Append(ConstructParts(childEntity, bodystructure));
                 }
-                else{
-                    retVal.Append(" NIL");
-                }
-
-				retVal.Append(")");
-			}
-			// Single part message
-			else{
-				retVal.Append("(");
-
-				// NOTE: all header fields and parameters must in ENCODED form !!!
-
-				// Add contentTypeMainMediaType
-				if(entity.ContentType != null && entity.ContentType.Type != null){
-					retVal.Append("\"" + entity.ContentType.Type + "\"");
-				}
-				else{
-					retVal.Append("NIL");
-				}
 
                 // Add contentTypeSubMediaType
-                if(entity.ContentType != null && entity.ContentType.SubType != null){
+                if (entity.ContentType != null && entity.ContentType.SubType != null)
+                {
                     retVal.Append(" \"" + entity.ContentType.SubType + "\"");
                 }
-                else{
+                else
+                {
                     retVal.Append(" NIL");
                 }
 
-				// conentTypeParameters - Syntax: {("name" SP "value" *(SP "name" SP "value"))}
-				if(entity.ContentType != null){
-                    if(entity.ContentType.Parameters.Count > 0){
+                retVal.Append(")");
+            }
+            // Single part message
+            else
+            {
+                retVal.Append("(");
+
+                // NOTE: all header fields and parameters must in ENCODED form !!!
+
+                // Add contentTypeMainMediaType
+                if (entity.ContentType != null && entity.ContentType.Type != null)
+                {
+                    retVal.Append("\"" + entity.ContentType.Type + "\"");
+                }
+                else
+                {
+                    retVal.Append("NIL");
+                }
+
+                // Add contentTypeSubMediaType
+                if (entity.ContentType != null && entity.ContentType.SubType != null)
+                {
+                    retVal.Append(" \"" + entity.ContentType.SubType + "\"");
+                }
+                else
+                {
+                    retVal.Append(" NIL");
+                }
+
+                // conentTypeParameters - Syntax: {("name" SP "value" *(SP "name" SP "value"))}
+                if (entity.ContentType != null)
+                {
+                    if (entity.ContentType.Parameters.Count > 0)
+                    {
                         retVal.Append(" (");
                         bool first = true;
-                        foreach(MIME_h_Parameter parameter in entity.ContentType.Parameters){
+                        foreach (MIME_h_Parameter parameter in entity.ContentType.Parameters)
+                        {
                             // For the first item, don't add SP.
-                            if(first){
+                            if (first)
+                            {
                                 first = false;
                             }
-                            else{
+                            else
+                            {
                                 retVal.Append(" ");
                             }
 
@@ -261,80 +278,89 @@ namespace LumiSoft.Net.IMAP
                         }
                         retVal.Append(")");
                     }
-                    else{
+                    else
+                    {
                         retVal.Append(" NIL");
                     }
-				}
-				else{
-					retVal.Append(" NIL");
-				}
+                }
+                else
+                {
+                    retVal.Append(" NIL");
+                }
 
-				// contentID
-				string contentID = entity.ContentID;
-				if(contentID != null){
-					retVal.Append(" \"" + wordEncoder.Encode(contentID) + "\""); 
-				}
-				else{
-					retVal.Append(" NIL");
-				}
+                // contentID
+                string contentID = entity.ContentID;
+                if (contentID != null)
+                {
+                    retVal.Append(" \"" + wordEncoder.Encode(contentID) + "\"");
+                }
+                else
+                {
+                    retVal.Append(" NIL");
+                }
 
-				// contentDescription
-				string contentDescription = entity.ContentDescription;
-				if(contentDescription != null){
-					retVal.Append(" \"" + wordEncoder.Encode(contentDescription) + "\""); 
-				}
-				else{
-					retVal.Append(" NIL");
-				}
+                // contentDescription
+                string contentDescription = entity.ContentDescription;
+                if (contentDescription != null)
+                {
+                    retVal.Append(" \"" + wordEncoder.Encode(contentDescription) + "\"");
+                }
+                else
+                {
+                    retVal.Append(" NIL");
+                }
 
-				// contentEncoding
-				if(entity.ContentTransferEncoding != null){
-					retVal.Append(" \"" + wordEncoder.Encode(entity.ContentTransferEncoding) + "\""); 
-				}
-				else{
-					// If not specified, then must be 7bit.
-					retVal.Append(" \"7bit\"");
-				}
+                // contentEncoding
+                if (entity.ContentTransferEncoding != null)
+                {
+                    retVal.Append(" \"" + wordEncoder.Encode(entity.ContentTransferEncoding) + "\"");
+                }
+                else
+                {
+                    // If not specified, then must be 7bit.
+                    retVal.Append(" \"7bit\"");
+                }
 
-				// contentSize
-				if(entity.Body is MIME_b_SinglepartBase){                    
-					retVal.Append(" " + ((MIME_b_SinglepartBase)entity.Body).EncodedData.Length.ToString());
-				}
-				else{
-					retVal.Append(" 0");
-				}
+                // contentSize
+                if (entity.Body is MIME_b_SinglepartBase)
+                {
+                    retVal.Append(" " + ((MIME_b_SinglepartBase)entity.Body).EncodedData.Length.ToString());
+                }
+                else
+                {
+                    retVal.Append(" 0");
+                }
 
-				// envelope ---> FOR ContentType: message/rfc822 ONLY ###
-				if(entity.Body is MIME_b_MessageRfc822){                    
-					retVal.Append(" " + IMAP_Envelope.ConstructEnvelope(((MIME_b_MessageRfc822)entity.Body).Message));
+                // envelope ---> FOR ContentType: message/rfc822 ONLY ###
+                if (entity.Body is MIME_b_MessageRfc822)
+                {
+                    retVal.Append(" " + IMAP_Envelope.ConstructEnvelope(((MIME_b_MessageRfc822)entity.Body).Message));
 
                     // TODO: BODYSTRUCTURE,LINES
-				}
+                }
 
-				// contentLines ---> FOR ContentType: text/xxx ONLY ###
-				if(entity.Body is MIME_b_Text){                    
-				    long lineCount = 0;
-					StreamLineReader r = new StreamLineReader(new MemoryStream(((MIME_b_SinglepartBase)entity.Body).EncodedData));
-					byte[] line = r.ReadLine();
-					while(line != null){
-						lineCount++;
+                // contentLines ---> FOR ContentType: text/xxx ONLY ###
+                if (entity.Body is MIME_b_Text)
+                {
+                    long lineCount = 0;
+                    StreamLineReader r = new StreamLineReader(new MemoryStream(((MIME_b_SinglepartBase)entity.Body).EncodedData));
+                    byte[] line = r.ReadLine();
+                    while (line != null)
+                    {
+                        lineCount++;
 
-						line = r.ReadLine();
-					}
-						
-					retVal.Append(" " + lineCount.ToString());
-				}
+                        line = r.ReadLine();
+                    }
 
-				retVal.Append(")");
-			}
+                    retVal.Append(" " + lineCount.ToString());
+                }
 
-			return retVal.ToString();
-		}
+                retVal.Append(")");
+            }
 
-		#endregion
+            return retVal.ToString();
+        }
 
-
-        #region method Parse
 
         /// <summary>
         /// Parses IMAP BODYSTRUCTURE from body structure string.
@@ -346,41 +372,38 @@ namespace LumiSoft.Net.IMAP
             m_pMainEntity.Parse(bodyStructureString);
         }
 
-        #endregion
 
 
-        #region method GetEntities
+        /// <summary>
+        /// Gets mime entities, including nested entries. 
+        /// </summary>
+        /// <param name="entities"></param>
+        /// <param name="allEntries"></param>
+        private void GetEntities(IMAP_BODY_Entity[] entities, List<IMAP_BODY_Entity> allEntries)
+        {
+            if (entities != null)
+            {
+                foreach (IMAP_BODY_Entity ent in entities)
+                {
+                    allEntries.Add(ent);
 
-		/// <summary>
-		/// Gets mime entities, including nested entries. 
-		/// </summary>
-		/// <param name="entities"></param>
-		/// <param name="allEntries"></param>
-		private void GetEntities(IMAP_BODY_Entity[] entities,List<IMAP_BODY_Entity> allEntries)
-		{				
-			if(entities != null){
-				foreach(IMAP_BODY_Entity ent in entities){
-					allEntries.Add(ent);
-
-					// Add child entities, if any
-					if(ent.ChildEntities.Length > 0){
-						GetEntities(ent.ChildEntities,allEntries);
-					}
-				}
-			}
+                    // Add child entities, if any
+                    if (ent.ChildEntities.Length > 0)
+                    {
+                        GetEntities(ent.ChildEntities, allEntries);
+                    }
+                }
+            }
         }
 
-        #endregion
 
-
-        #region Properties Implementation
 
         /// <summary>
         /// Gets main entity.
         /// </summary>
         public IMAP_BODY_Entity MainEntity
         {
-            get{ return m_pMainEntity; }
+            get { return m_pMainEntity; }
         }
 
         /// <summary>
@@ -388,12 +411,13 @@ namespace LumiSoft.Net.IMAP
         /// </summary>
         public IMAP_BODY_Entity[] Entities
         {
-            get{ 
+            get
+            {
                 List<IMAP_BODY_Entity> allEntities = new List<IMAP_BODY_Entity>();
-				allEntities.Add(m_pMainEntity);
-				GetEntities(m_pMainEntity.ChildEntities,allEntities);
+                allEntities.Add(m_pMainEntity);
+                GetEntities(m_pMainEntity.ChildEntities, allEntities);
 
-				return allEntities.ToArray();
+                return allEntities.ToArray();
             }
         }
 
@@ -404,28 +428,32 @@ namespace LumiSoft.Net.IMAP
         public IMAP_BODY_Entity[] Attachmnets
         {
             // Cant use these at moment, we need to use extended BODYSTRUCTURE fo that    
-        //     *) Content-Disposition: attachment (RFC 2822 message)<p/>
-        //     *) Content-Disposition: filename = "" is specified  (RFC 2822 message)<p/>
+            //     *) Content-Disposition: attachment (RFC 2822 message)<p/>
+            //     *) Content-Disposition: filename = "" is specified  (RFC 2822 message)<p/>
 
-            get{ 
+            get
+            {
                 List<IMAP_BODY_Entity> attachments = new List<IMAP_BODY_Entity>();
-				IMAP_BODY_Entity[] entities = this.Entities;
-				foreach(IMAP_BODY_Entity entity in entities){
-                    if(entity.ContentType != null){
-                        foreach(MIME_h_Parameter parameter in entity.ContentType.Parameters){
-                            if(parameter.Name.ToLower() == "name"){
+                IMAP_BODY_Entity[] entities = this.Entities;
+                foreach (IMAP_BODY_Entity entity in entities)
+                {
+                    if (entity.ContentType != null)
+                    {
+                        foreach (MIME_h_Parameter parameter in entity.ContentType.Parameters)
+                        {
+                            if (parameter.Name.ToLower() == "name")
+                            {
                                 attachments.Add(entity);
                                 break;
                             }
                         }
                     }
-				}
+                }
 
                 return attachments.ToArray();
             }
         }
 
-        #endregion
 
     }
 }

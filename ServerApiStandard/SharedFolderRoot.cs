@@ -1,21 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace LumiSoft.MailServer
 {
+
+
     /// <summary>
     /// Shared Folders root folder.
     /// </summary>
     public class SharedFolderRoot
     {
-        private string                    m_RootID        = "";
-        private bool                      m_Enabled       = true;
-        private string                    m_FolderName    = "";
-        private string                    m_Description   = "";
-        private SharedFolderRootType_enum m_RootType      = SharedFolderRootType_enum.BoundedRootFolder;
-        private string                    m_BoundedUser   = "";
-        private string                    m_BoundedFolder = "";
+        private string m_RootID = "";
+        private bool m_Enabled = true;
+        private string m_FolderName = "";
+        private string m_Description = "";
+        private SharedFolderRootType_enum m_RootType = SharedFolderRootType_enum.BoundedRootFolder;
+        private string m_BoundedUser = "";
+        private string m_BoundedFolder = "";
 
         /// <summary>
         /// Default constructor.
@@ -27,26 +26,24 @@ namespace LumiSoft.MailServer
         /// <param name="rootType">Specifies what type root folder is.</param>
         /// <param name="boundedUser">User which to bound root folder.</param>
         /// <param name="boundedFolder">BoundingUser folder name which to bound root folder.</param>
-        public SharedFolderRoot(string rootID,bool enabled,string folderName,string description,SharedFolderRootType_enum rootType,string boundedUser,string boundedFolder)
+        public SharedFolderRoot(string rootID, bool enabled, string folderName, string description, SharedFolderRootType_enum rootType, string boundedUser, string boundedFolder)
         {
-            m_RootID        = rootID;
-            m_Enabled       = enabled;
-            m_FolderName    = folderName;
-            m_Description   = description;
-            m_RootType      = rootType;
-            m_BoundedUser   = boundedUser;
+            m_RootID = rootID;
+            m_Enabled = enabled;
+            m_FolderName = folderName;
+            m_Description = description;
+            m_RootType = rootType;
+            m_BoundedUser = boundedUser;
             m_BoundedFolder = boundedFolder;
         }
 
-
-        #region method Properites Implementation
 
         /// <summary>
         /// Gets Root Folder ID.
         /// </summary>
         public string RootID
         {
-            get{ return m_RootID; }
+            get { return m_RootID; }
         }
 
         /// <summary>
@@ -54,7 +51,7 @@ namespace LumiSoft.MailServer
         /// </summary>
         public bool Enabled
         {
-            get{ return m_Enabled; }
+            get { return m_Enabled; }
         }
 
         /// <summary>
@@ -62,7 +59,7 @@ namespace LumiSoft.MailServer
         /// </summary>
         public string FolderName
         {
-            get{ return m_FolderName; }
+            get { return m_FolderName; }
         }
 
 
@@ -71,7 +68,7 @@ namespace LumiSoft.MailServer
         /// </summary>
         public string Description
         {
-            get{ return m_Description; }
+            get { return m_Description; }
         }
 
         /// <summary>
@@ -79,7 +76,7 @@ namespace LumiSoft.MailServer
         /// </summary>
         public SharedFolderRootType_enum RootType
         {
-            get{ return m_RootType; }
+            get { return m_RootType; }
         }
 
         /// <summary>
@@ -87,7 +84,7 @@ namespace LumiSoft.MailServer
         /// </summary>
         public string BoundedUser
         {
-            get{ return m_BoundedUser; }
+            get { return m_BoundedUser; }
         }
 
         /// <summary>
@@ -95,10 +92,11 @@ namespace LumiSoft.MailServer
         /// </summary>
         public string BoundedFolder
         {
-            get{ return m_BoundedFolder; }
+            get { return m_BoundedFolder; }
         }
 
-        #endregion
 
     }
+
+
 }

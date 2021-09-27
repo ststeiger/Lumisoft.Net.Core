@@ -1,9 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace LumiSoft.MailServer
 {
+
+
     /// <summary>
     /// User permission flags.
     /// </summary>
@@ -39,4 +38,6 @@ namespace LumiSoft.MailServer
         /// </summary>
         SIP = 16,
     }
+
+
 }

@@ -7,7 +7,6 @@ using System.Data;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Reflection;
-using System.Threading;
 
 
 using LumiSoft.Net;
@@ -29,8 +28,11 @@ using LumiSoft.Net.SIP.Proxy;
 using LumiSoft.Net.MIME;
 using LumiSoft.Net.Mail;
 
+
 namespace LumiSoft.MailServer
 {
+
+
     /// <summary>
     /// Implements mail server virtual server.
     /// </summary>

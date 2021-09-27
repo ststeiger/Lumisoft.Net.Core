@@ -1,14 +1,18 @@
+
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Text;
+
 
 using LumiSoft.Net;
 using LumiSoft.Net.Mail;
 using LumiSoft.Net.IMAP;
 
+
 namespace LumiSoft.MailServer
 {
+
+
     #region class RecycleBinMessageInfo
 
     /// <summary>
@@ -480,4 +484,6 @@ namespace LumiSoft.MailServer
         #endregion
 
     }
+
+
 }
