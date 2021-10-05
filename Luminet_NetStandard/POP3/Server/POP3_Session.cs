@@ -16,20 +16,20 @@ namespace LumiSoft.Net.POP3.Server
     /// </summary>
     public class POP3_Session : TCP_ServerSession
     {
-        private Dictionary<string,AUTH_SASL_ServerMechanism>  m_pAuthentications = null;
-        private bool                                          m_SessionRejected  = false;
-        private int                                           m_BadCommands      = 0;
-        private string                                        m_UserName         = null;
-        private GenericIdentity                               m_pUser            = null;
-        private KeyValueCollection<string,POP3_ServerMessage> m_pMessages        = null;
+        private Dictionary<string, AUTH_SASL_ServerMechanism> m_pAuthentications = null;
+        private bool m_SessionRejected = false;
+        private int m_BadCommands = 0;
+        private string m_UserName = null;
+        private GenericIdentity m_pUser = null;
+        private KeyValueCollection<string, POP3_ServerMessage> m_pMessages = null;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
         public POP3_Session()
         {
-            m_pAuthentications = new Dictionary<string,AUTH_SASL_ServerMechanism>(StringComparer.CurrentCultureIgnoreCase);
-            m_pMessages = new KeyValueCollection<string,POP3_ServerMessage>();
+            m_pAuthentications = new Dictionary<string, AUTH_SASL_ServerMechanism>(StringComparer.CurrentCultureIgnoreCase);
+            m_pMessages = new KeyValueCollection<string, POP3_ServerMessage>();
         }
 
 
@@ -46,34 +46,38 @@ namespace LumiSoft.Net.POP3.Server
                 Once the TCP connection has been opened by a POP3 client, the POP3
                 server issues a one line greeting.  This can be any positive
                 response.  An example might be:
-
                     S:  +OK POP3 server ready
-
             */
-            
-            try{
+
+            try
+            {
                 string reply = null;
-                if(string.IsNullOrEmpty(this.Server.GreetingText)){
+                if (string.IsNullOrEmpty(this.Server.GreetingText))
+                {
                     reply = "+OK [" + Net_Utils.GetLocalHostName(this.LocalHostName) + "] POP3 Service Ready.";
                 }
-                else{
+                else
+                {
                     reply = "+OK " + this.Server.GreetingText;
                 }
 
                 POP3_e_Started e = OnStarted(reply);
 
-                if(!string.IsNullOrEmpty(e.Response)){
+                if (!string.IsNullOrEmpty(e.Response))
+                {
                     WriteLine(reply.ToString());
                 }
 
                 // Setup rejected flag, so we respond "-ERR Session rejected." any command except QUIT.
-                if(string.IsNullOrEmpty(e.Response) || e.Response.ToUpper().StartsWith("-ERR")){
+                if (string.IsNullOrEmpty(e.Response) || e.Response.ToUpper().StartsWith("-ERR"))
+                {
                     m_SessionRejected = true;
                 }
-                               
+
                 BeginReadCmd();
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 OnError(x);
             }
         }
@@ -88,10 +92,12 @@ namespace LumiSoft.Net.POP3.Server
         /// <param name="x">Exception happened.</param>
         protected override void OnError(Exception x)
         {
-            if(this.IsDisposed){
+            if (this.IsDisposed)
+            {
                 return;
             }
-            if(x == null){
+            if (x == null)
+            {
                 return;
             }
 
@@ -99,29 +105,35 @@ namespace LumiSoft.Net.POP3.Server
                 IO and Socket exceptions are permanent, so we must end session.
             */
 
-            try{
+            try
+            {
                 LogAddText("Exception: " + x.Message);
 
                 // Permanent error.
-                if(x is IOException || x is SocketException){
+                if (x is IOException || x is SocketException)
+                {
                     Dispose();
                 }
                 // xxx error, may be temporary.
-                else{
+                else
+                {
                     // Raise POP3_Server.Error event.
                     base.OnError(x);
 
                     // Try to send "-ERR Internal server error."
-                    try{
+                    try
+                    {
                         WriteLine("-ERR Internal server error.");
                     }
-                    catch{
+                    catch
+                    {
                         // Error is permanent.
                         Dispose();
                     }
                 }
             }
-            catch{
+            catch
+            {
             }
         }
 
@@ -138,12 +150,14 @@ namespace LumiSoft.Net.POP3.Server
         /// </remarks>
         protected override void OnTimeout()
         {
-            try{
+            try
+            {
                 // TODO: ? We should close active message stream.
 
                 WriteLine("-ERR Idle timeout, closing connection.");
             }
-            catch{
+            catch
+            {
                 // Skip errors.
             }
         }
@@ -158,26 +172,33 @@ namespace LumiSoft.Net.POP3.Server
         /// </summary>
         private void BeginReadCmd()
         {
-            if(this.IsDisposed){
+            if (this.IsDisposed)
+            {
                 return;
             }
 
-            try{
-                SmartStream.ReadLineAsyncOP readLineOP = new SmartStream.ReadLineAsyncOP(new byte[32000],SizeExceededAction.JunkAndThrowException);
+            try
+            {
+                SmartStream.ReadLineAsyncOP readLineOP = new SmartStream.ReadLineAsyncOP(new byte[32000], SizeExceededAction.JunkAndThrowException);
                 // This event is raised only when read next coomand completes asynchronously.
-                readLineOP.CompletedAsync += new EventHandler<EventArgs<SmartStream.ReadLineAsyncOP>>(delegate(object sender,EventArgs<SmartStream.ReadLineAsyncOP> e){                
-                    if(ProcessCmd(readLineOP)){
+                readLineOP.CompletedAsync += new EventHandler<EventArgs<SmartStream.ReadLineAsyncOP>>(delegate (object sender, EventArgs<SmartStream.ReadLineAsyncOP> e)
+                {
+                    if (ProcessCmd(readLineOP))
+                    {
                         BeginReadCmd();
                     }
                 });
                 // Process incoming commands while, command reading completes synchronously.
-                while(this.TcpStream.ReadLine(readLineOP,true)){
-                    if(!ProcessCmd(readLineOP)){
+                while (this.TcpStream.ReadLine(readLineOP, true))
+                {
+                    if (!ProcessCmd(readLineOP))
+                    {
                         break;
                     }
                 }
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 OnError(x);
             }
         }
@@ -194,99 +215,123 @@ namespace LumiSoft.Net.POP3.Server
         private bool ProcessCmd(SmartStream.ReadLineAsyncOP op)
         {
             bool readNextCommand = true;
-                        
-            try{
+
+            try
+            {
                 // We are already disposed.
-                if(this.IsDisposed){
+                if (this.IsDisposed)
+                {
                     return false;
                 }
                 // Check errors.
-                if(op.Error != null){
+                if (op.Error != null)
+                {
                     OnError(op.Error);
                 }
                 // Remote host shut-down(Socket.ShutDown) socket.
-                if(op.BytesInBuffer == 0){
+                if (op.BytesInBuffer == 0)
+                {
                     LogAddText("The remote host '" + this.RemoteEndPoint.ToString() + "' shut down socket.");
                     Dispose();
-                
+
                     return false;
                 }
-                                
-                string[] cmd_args = Encoding.UTF8.GetString(op.Buffer,0,op.LineBytesInBuffer).Split(new char[]{' '},2);
-                string   cmd      = cmd_args[0].ToUpperInvariant();
-                string   args     = cmd_args.Length == 2 ? cmd_args[1] : "";
+
+                string[] cmd_args = Encoding.UTF8.GetString(op.Buffer, 0, op.LineBytesInBuffer).Split(new char[] { ' ' }, 2);
+                string cmd = cmd_args[0].ToUpperInvariant();
+                string args = cmd_args.Length == 2 ? cmd_args[1] : "";
 
                 // Log.
-                if(this.Server.Logger != null){
+                if (this.Server.Logger != null)
+                {
                     // Hide password from log.
-                    if(cmd == "PASS"){
-                        this.Server.Logger.AddRead(this.ID,this.AuthenticatedUserIdentity,op.BytesInBuffer,"PASS <***REMOVED***>",this.LocalEndPoint,this.RemoteEndPoint);
+                    if (cmd == "PASS")
+                    {
+                        this.Server.Logger.AddRead(this.ID, this.AuthenticatedUserIdentity, op.BytesInBuffer, "PASS <***REMOVED***>", this.LocalEndPoint, this.RemoteEndPoint);
                     }
-                    else{
-                        this.Server.Logger.AddRead(this.ID,this.AuthenticatedUserIdentity,op.BytesInBuffer,op.LineUtf8,this.LocalEndPoint,this.RemoteEndPoint);
+                    else
+                    {
+                        this.Server.Logger.AddRead(this.ID, this.AuthenticatedUserIdentity, op.BytesInBuffer, op.LineUtf8, this.LocalEndPoint, this.RemoteEndPoint);
                     }
                 }
 
-                if(cmd == "STLS"){
+                if (cmd == "STLS")
+                {
                     STLS(args);
                 }
-                else if(cmd == "USER"){
+                else if (cmd == "USER")
+                {
                     USER(args);
                 }
-                else if(cmd == "PASS"){
+                else if (cmd == "PASS")
+                {
                     PASS(args);
                 }
-                else if(cmd == "AUTH"){
+                else if (cmd == "AUTH")
+                {
                     AUTH(args);
                 }
-                else if(cmd == "STAT"){
+                else if (cmd == "STAT")
+                {
                     STAT(args);
                 }
-                else if(cmd == "LIST"){
+                else if (cmd == "LIST")
+                {
                     LIST(args);
                 }
-                else if(cmd == "UIDL"){
+                else if (cmd == "UIDL")
+                {
                     UIDL(args);
                 }
-                else if(cmd == "TOP"){
+                else if (cmd == "TOP")
+                {
                     TOP(args);
                 }
-                else if(cmd == "RETR"){
+                else if (cmd == "RETR")
+                {
                     RETR(args);
                 }
-                else if(cmd == "DELE"){
+                else if (cmd == "DELE")
+                {
                     DELE(args);
                 }
-                else if(cmd == "NOOP"){
+                else if (cmd == "NOOP")
+                {
                     NOOP(args);
                 }
-                else if(cmd == "RSET"){
+                else if (cmd == "RSET")
+                {
                     RSET(args);
                 }
-                else if(cmd == "CAPA"){
+                else if (cmd == "CAPA")
+                {
                     CAPA(args);
                 }
-                else if(cmd == "QUIT"){
+                else if (cmd == "QUIT")
+                {
                     QUIT(args);
                 }
-                else{
-                     m_BadCommands++;
+                else
+                {
+                    m_BadCommands++;
 
-                     // Maximum allowed bad commands exceeded.
-                     if(this.Server.MaxBadCommands != 0 && m_BadCommands > this.Server.MaxBadCommands){
-                         WriteLine("-ERR Too many bad commands, closing transmission channel.");
-                         Disconnect();
-                         return false;
-                     }
-                            
-                     WriteLine("-ERR Error: command '" + cmd + "' not recognized.");
-                 }
-             }
-             catch(Exception x){
-                 OnError(x);
-             }
+                    // Maximum allowed bad commands exceeded.
+                    if (this.Server.MaxBadCommands != 0 && m_BadCommands > this.Server.MaxBadCommands)
+                    {
+                        WriteLine("-ERR Too many bad commands, closing transmission channel.");
+                        Disconnect();
+                        return false;
+                    }
 
-             return readNextCommand;
+                    WriteLine("-ERR Error: command '" + cmd + "' not recognized.");
+                }
+            }
+            catch (Exception x)
+            {
+                OnError(x);
+            }
+
+            return readNextCommand;
         }
 
         #endregion
@@ -338,22 +383,26 @@ namespace LumiSoft.Net.POP3.Server
                      S: -ERR Command not permitted when TLS active
             */
 
-            if(m_SessionRejected){
+            if (m_SessionRejected)
+            {
                 WriteLine("-ERR Bad sequence of commands: Session rejected.");
 
                 return;
             }
-            if(this.IsAuthenticated){
+            if (this.IsAuthenticated)
+            {
                 this.TcpStream.WriteLine("-ERR This ommand is only valid in AUTHORIZATION state (RFC 2595 4).");
 
                 return;
             }
-            if(this.IsSecureConnection){
+            if (this.IsSecureConnection)
+            {
                 WriteLine("-ERR Bad sequence of commands: Connection is already secure.");
 
                 return;
             }
-            if(this.Certificate == null){
+            if (this.Certificate == null)
+            {
                 WriteLine("-ERR TLS not available: Server has no SSL certificate.");
 
                 return;
@@ -361,13 +410,15 @@ namespace LumiSoft.Net.POP3.Server
 
             WriteLine("+OK Ready to start TLS.");
 
-            try{
+            try
+            {
                 SwitchToSecure();
 
                 // Log
                 LogAddText("TLS negotiation completed successfully.");
             }
-            catch(Exception x){
+            catch (Exception x)
+            {
                 // Log
                 LogAddText("TLS negotiation failed: " + x.Message + ".");
 
@@ -393,17 +444,20 @@ namespace LumiSoft.Net.POP3.Server
 				    or the QUIT command to terminate the POP3 session.			 
 			*/
 
-            if(m_SessionRejected){
+            if (m_SessionRejected)
+            {
                 WriteLine("-ERR Bad sequence of commands: Session rejected.");
 
                 return;
             }
-            if(this.IsAuthenticated){
+            if (this.IsAuthenticated)
+            {
                 this.TcpStream.WriteLine("-ERR Re-authentication error.");
 
                 return;
             }
-            if(m_UserName != null){
+            if (m_UserName != null)
+            {
                 this.TcpStream.WriteLine("-ERR User name already specified.");
 
                 return;
@@ -441,42 +495,49 @@ namespace LumiSoft.Net.POP3.Server
 						
 			*/
 
-            if(m_SessionRejected){
+            if (m_SessionRejected)
+            {
                 WriteLine("-ERR Bad sequence of commands: Session rejected.");
 
                 return;
             }
-            if(this.IsAuthenticated){
+            if (this.IsAuthenticated)
+            {
                 this.TcpStream.WriteLine("-ERR Re-authentication error.");
 
                 return;
             }
-            if(m_UserName == null){
+            if (m_UserName == null)
+            {
                 this.TcpStream.WriteLine("-ERR Specify user name first.");
 
                 return;
             }
-            if(string.IsNullOrEmpty(cmdText)){
+            if (string.IsNullOrEmpty(cmdText))
+            {
                 this.TcpStream.WriteLine("-ERR Error in arguments.");
 
                 return;
             }
-                        
-            POP3_e_Authenticate e = OnAuthenticate(m_UserName,cmdText);
-            if(e.IsAuthenticated){
-                m_pUser = new GenericIdentity(m_UserName,"POP3-USER/PASS");
+
+            POP3_e_Authenticate e = OnAuthenticate(m_UserName, cmdText);
+            if (e.IsAuthenticated)
+            {
+                m_pUser = new GenericIdentity(m_UserName, "POP3-USER/PASS");
 
                 // Get mailbox messages.
                 POP3_e_GetMessagesInfo eMessages = OnGetMessagesInfo();
                 int seqNo = 1;
-                foreach(POP3_ServerMessage message in eMessages.Messages){
+                foreach (POP3_ServerMessage message in eMessages.Messages)
+                {
                     message.SequenceNumber = seqNo++;
-                    m_pMessages.Add(message.UID,message);
+                    m_pMessages.Add(message.UID, message);
                 }
 
-                this.TcpStream.WriteLine("+OK Authenticated successfully.");                
+                this.TcpStream.WriteLine("+OK Authenticated successfully.");
             }
-            else{
+            else
+            {
                 this.TcpStream.WriteLine("-ERR Authentication failed.");
             }
         }
@@ -574,12 +635,14 @@ namespace LumiSoft.Net.POP3.Server
 			 
 			*/
 
-            if(m_SessionRejected){
+            if (m_SessionRejected)
+            {
                 WriteLine("-ERR Bad sequence of commands: Session rejected.");
 
                 return;
             }
-            if(this.IsAuthenticated){
+            if (this.IsAuthenticated)
+            {
                 this.TcpStream.WriteLine("-ERR Re-authentication error.");
 
                 return;
@@ -596,10 +659,12 @@ namespace LumiSoft.Net.POP3.Server
                 
                 http://msdn.microsoft.com/en-us/library/cc239199.aspx
             */
-            if(string.IsNullOrEmpty(mechanism)){
+            if (string.IsNullOrEmpty(mechanism))
+            {
                 StringBuilder resp = new StringBuilder();
                 resp.Append("+OK\r\n");
-                foreach(AUTH_SASL_ServerMechanism m in m_pAuthentications.Values){
+                foreach (AUTH_SASL_ServerMechanism m in m_pAuthentications.Values)
+                {
                     resp.Append(m.Name + "\r\n");
                 }
                 resp.Append(".\r\n");
@@ -609,7 +674,8 @@ namespace LumiSoft.Net.POP3.Server
                 return;
             }
 
-            if(!this.Authentications.ContainsKey(mechanism)){
+            if (!this.Authentications.ContainsKey(mechanism))
+            {
                 WriteLine("-ERR Not supported authentication mechanism.");
                 return;
             }
@@ -617,60 +683,74 @@ namespace LumiSoft.Net.POP3.Server
             byte[] clientResponse = new byte[0];
             AUTH_SASL_ServerMechanism auth = this.Authentications[mechanism];
             auth.Reset();
-            while(true){
+            while (true)
+            {
                 byte[] serverResponse = auth.Continue(clientResponse);
                 // Authentication completed.
-                if(auth.IsCompleted){
-                    if(auth.IsAuthenticated){
-                        m_pUser = new GenericIdentity(auth.UserName,"SASL-" + auth.Name);
+                if (auth.IsCompleted)
+                {
+                    if (auth.IsAuthenticated)
+                    {
+                        m_pUser = new GenericIdentity(auth.UserName, "SASL-" + auth.Name);
 
                         // Get mailbox messages.
                         POP3_e_GetMessagesInfo eMessages = OnGetMessagesInfo();
                         int seqNo = 1;
-                        foreach(POP3_ServerMessage message in eMessages.Messages){
+                        foreach (POP3_ServerMessage message in eMessages.Messages)
+                        {
                             message.SequenceNumber = seqNo++;
-                            m_pMessages.Add(message.UID,message);
+                            m_pMessages.Add(message.UID, message);
                         }
 
                         WriteLine("+OK Authentication succeeded.");
                     }
-                    else{
+                    else
+                    {
                         WriteLine("-ERR Authentication credentials invalid.");
                     }
                     break;
                 }
                 // Authentication continues.
-                else{
+                else
+                {
                     // Send server challenge.
-                    if(serverResponse.Length == 0){
+                    if (serverResponse.Length == 0)
+                    {
                         WriteLine("+ ");
                     }
-                    else{
+                    else
+                    {
                         WriteLine("+ " + Convert.ToBase64String(serverResponse));
                     }
 
                     // Read client response. 
-                    SmartStream.ReadLineAsyncOP readLineOP = new SmartStream.ReadLineAsyncOP(new byte[32000],SizeExceededAction.JunkAndThrowException);
-                    this.TcpStream.ReadLine(readLineOP,false);
-                    if(readLineOP.Error != null){
+                    SmartStream.ReadLineAsyncOP readLineOP = new SmartStream.ReadLineAsyncOP(new byte[32000], SizeExceededAction.JunkAndThrowException);
+                    this.TcpStream.ReadLine(readLineOP, false);
+                    if (readLineOP.Error != null)
+                    {
                         throw readLineOP.Error;
                     }
                     // Log
-                    if(this.Server.Logger != null){
-                        this.Server.Logger.AddRead(this.ID,this.AuthenticatedUserIdentity,readLineOP.BytesInBuffer,"base64 auth-data",this.LocalEndPoint,this.RemoteEndPoint);
+                    if (this.Server.Logger != null)
+                    {
+                        this.Server.Logger.AddRead(this.ID, this.AuthenticatedUserIdentity, readLineOP.BytesInBuffer, "base64 auth-data", this.LocalEndPoint, this.RemoteEndPoint);
                     }
 
                     // Client canceled authentication.
-                    if(readLineOP.LineUtf8 == "*"){
+                    if (readLineOP.LineUtf8 == "*")
+                    {
                         WriteLine("-ERR Authentication canceled.");
                         return;
                     }
                     // We have base64 client response, decode it.
-                    else{
-                        try{
+                    else
+                    {
+                        try
+                        {
                             clientResponse = Convert.FromBase64String(readLineOP.LineUtf8);
                         }
-                        catch{
+                        catch
+                        {
                             WriteLine("-ERR Invalid client response '" + clientResponse + "'.");
                             return;
                         }
@@ -700,12 +780,14 @@ namespace LumiSoft.Net.POP3.Server
 				S: +OK 2 320
 			*/
 
-            if(m_SessionRejected){
+            if (m_SessionRejected)
+            {
                 WriteLine("-ERR Bad sequence of commands: Session rejected.");
 
                 return;
             }
-            if(!this.IsAuthenticated){
+            if (!this.IsAuthenticated)
+            {
                 WriteLine("-ERR Authentication required.");
 
                 return;
@@ -713,9 +795,11 @@ namespace LumiSoft.Net.POP3.Server
 
             // Calculate count and total size in bytes, exclude marked for deletion messages.
             int count = 0;
-            int size  = 0;
-            foreach(POP3_ServerMessage msg in m_pMessages){
-                if(!msg.IsMarkedForDeletion){
+            int size = 0;
+            foreach (POP3_ServerMessage msg in m_pMessages)
+            {
+                if (!msg.IsMarkedForDeletion)
+                {
                     count++;
                     size += msg.Size;
                 }
@@ -760,12 +844,14 @@ namespace LumiSoft.Net.POP3.Server
 			 
 			*/
 
-            if(m_SessionRejected){
+            if (m_SessionRejected)
+            {
                 WriteLine("-ERR Bad sequence of commands: Session rejected.");
 
                 return;
             }
-            if(!this.IsAuthenticated){
+            if (!this.IsAuthenticated)
+            {
                 WriteLine("-ERR Authentication required.");
 
                 return;
@@ -774,12 +860,15 @@ namespace LumiSoft.Net.POP3.Server
             string[] args = cmdText.Split(' ');
 
             // List whole mailbox.
-            if(string.IsNullOrEmpty(cmdText)){
+            if (string.IsNullOrEmpty(cmdText))
+            {
                 // Calculate count and total size in bytes, exclude marked for deletion messages.
                 int count = 0;
-                int size  = 0;
-                foreach(POP3_ServerMessage msg in m_pMessages){
-                    if(!msg.IsMarkedForDeletion){
+                int size = 0;
+                foreach (POP3_ServerMessage msg in m_pMessages)
+                {
+                    if (!msg.IsMarkedForDeletion)
+                    {
                         count++;
                         size += msg.Size;
                     }
@@ -787,25 +876,30 @@ namespace LumiSoft.Net.POP3.Server
 
                 StringBuilder response = new StringBuilder();
                 response.Append("+OK " + count + " messages (" + size + " bytes).\r\n");
-                foreach(POP3_ServerMessage msg in m_pMessages){
+                foreach (POP3_ServerMessage msg in m_pMessages)
+                {
                     response.Append(msg.SequenceNumber + " " + msg.Size + "\r\n");
                 }
                 response.Append(".");
 
-                 WriteLine(response.ToString());
+                WriteLine(response.ToString());
             }
             // Single message info listing.
-            else{
-                if(args.Length > 1 || !Net_Utils.IsInteger(args[0])){
+            else
+            {
+                if (args.Length > 1 || !Net_Utils.IsInteger(args[0]))
+                {
                     WriteLine("-ERR Error in arguments.");
 
                     return;
                 }
 
                 POP3_ServerMessage msg = null;
-                if(m_pMessages.TryGetValueAt(Convert.ToInt32(args[0]) - 1,out msg)){
+                if (m_pMessages.TryGetValueAt(Convert.ToInt32(args[0]) - 1, out msg))
+                {
                     // Block messages marked for deletion.
-                    if(msg.IsMarkedForDeletion){
+                    if (msg.IsMarkedForDeletion)
+                    {
                         WriteLine("-ERR Invalid operation: Message marked for deletion.");
 
                         return;
@@ -813,7 +907,8 @@ namespace LumiSoft.Net.POP3.Server
 
                     WriteLine("+OK " + msg.SequenceNumber + " " + msg.Size);
                 }
-                else{
+                else
+                {
                     WriteLine("-ERR no such message or message marked for deletion.");
                 }
             }
@@ -853,12 +948,14 @@ namespace LumiSoft.Net.POP3.Server
 				S: -ERR no such message
 			*/
 
-            if(m_SessionRejected){
+            if (m_SessionRejected)
+            {
                 WriteLine("-ERR Bad sequence of commands: Session rejected.");
 
                 return;
             }
-            if(!this.IsAuthenticated){
+            if (!this.IsAuthenticated)
+            {
                 WriteLine("-ERR Authentication required.");
 
                 return;
@@ -867,12 +964,15 @@ namespace LumiSoft.Net.POP3.Server
             string[] args = cmdText.Split(' ');
 
             // List whole mailbox.
-            if(string.IsNullOrEmpty(cmdText)){
+            if (string.IsNullOrEmpty(cmdText))
+            {
                 // Calculate count and total size in bytes, exclude marked for deletion messages.
                 int count = 0;
-                int size  = 0;
-                foreach(POP3_ServerMessage msg in m_pMessages){
-                    if(!msg.IsMarkedForDeletion){
+                int size = 0;
+                foreach (POP3_ServerMessage msg in m_pMessages)
+                {
+                    if (!msg.IsMarkedForDeletion)
+                    {
                         count++;
                         size += msg.Size;
                     }
@@ -880,25 +980,30 @@ namespace LumiSoft.Net.POP3.Server
 
                 StringBuilder response = new StringBuilder();
                 response.Append("+OK " + count + " messages (" + size + " bytes).\r\n");
-                foreach(POP3_ServerMessage msg in m_pMessages){
+                foreach (POP3_ServerMessage msg in m_pMessages)
+                {
                     response.Append(msg.SequenceNumber + " " + msg.UID + "\r\n");
                 }
                 response.Append(".");
 
-                 WriteLine(response.ToString());
+                WriteLine(response.ToString());
             }
             // Single message info listing.
-            else{
-                if(args.Length > 1){
+            else
+            {
+                if (args.Length > 1)
+                {
                     WriteLine("-ERR Error in arguments.");
 
                     return;
                 }
 
                 POP3_ServerMessage msg = null;
-                if(m_pMessages.TryGetValueAt(Convert.ToInt32(args[0]) - 1,out msg)){
+                if (m_pMessages.TryGetValueAt(Convert.ToInt32(args[0]) - 1, out msg))
+                {
                     // Block messages marked for deletion.
-                    if(msg.IsMarkedForDeletion){
+                    if (msg.IsMarkedForDeletion)
+                    {
                         WriteLine("-ERR Invalid operation: Message marked for deletion.");
 
                         return;
@@ -906,7 +1011,8 @@ namespace LumiSoft.Net.POP3.Server
 
                     WriteLine("+OK " + msg.SequenceNumber + " " + msg.UID);
                 }
-                else{
+                else
+                {
                     WriteLine("-ERR no such message or message marked for deletion.");
                 }
             }
@@ -946,12 +1052,14 @@ namespace LumiSoft.Net.POP3.Server
 			 
 			*/
 
-            if(m_SessionRejected){
+            if (m_SessionRejected)
+            {
                 WriteLine("-ERR Bad sequence of commands: Session rejected.");
 
                 return;
             }
-            if(!this.IsAuthenticated){
+            if (!this.IsAuthenticated)
+            {
                 WriteLine("-ERR Authentication required.");
 
                 return;
@@ -959,39 +1067,46 @@ namespace LumiSoft.Net.POP3.Server
 
             string[] args = cmdText.Split(' ');
 
-            if(args.Length != 2 || !Net_Utils.IsInteger(args[0]) || !Net_Utils.IsInteger(args[1])){
+            if (args.Length != 2 || !Net_Utils.IsInteger(args[0]) || !Net_Utils.IsInteger(args[1]))
+            {
                 WriteLine("-ERR Error in arguments.");
 
                 return;
             }
 
             POP3_ServerMessage msg = null;
-            if(m_pMessages.TryGetValueAt(Convert.ToInt32(args[0]) - 1,out msg)){
+            if (m_pMessages.TryGetValueAt(Convert.ToInt32(args[0]) - 1, out msg))
+            {
                 // Block messages marked for deletion.
-                if(msg.IsMarkedForDeletion){
+                if (msg.IsMarkedForDeletion)
+                {
                     WriteLine("-ERR Invalid operation: Message marked for deletion.");
 
                     return;
                 }
 
-                POP3_e_GetTopOfMessage e = OnGetTopOfMessage(msg,Convert.ToInt32(args[1]));
+                POP3_e_GetTopOfMessage e = OnGetTopOfMessage(msg, Convert.ToInt32(args[1]));
 
                 // User didn't provide us message stream, assume that message deleted(for example by IMAP during this POP3 session).
-                if(e.Data == null){
+                if (e.Data == null)
+                {
                     WriteLine("-ERR no such message.");
                 }
-                else{
+                else
+                {
                     WriteLine("+OK Start sending top of message.");
 
                     long countWritten = this.TcpStream.WritePeriodTerminated(new MemoryStream(e.Data));
 
                     // Log.
-                    if(this.Server.Logger != null){
-                        this.Server.Logger.AddWrite(this.ID,this.AuthenticatedUserIdentity,countWritten,"Wrote top of message(" + countWritten + " bytes).",this.LocalEndPoint,this.RemoteEndPoint);
+                    if (this.Server.Logger != null)
+                    {
+                        this.Server.Logger.AddWrite(this.ID, this.AuthenticatedUserIdentity, countWritten, "Wrote top of message(" + countWritten + " bytes).", this.LocalEndPoint, this.RemoteEndPoint);
                     }
                 }
             }
-            else{
+            else
+            {
                 WriteLine("-ERR no such message.");
             }
         }
@@ -1022,12 +1137,14 @@ namespace LumiSoft.Net.POP3.Server
 			
 			*/
 
-            if(m_SessionRejected){
+            if (m_SessionRejected)
+            {
                 WriteLine("-ERR Bad sequence of commands: Session rejected.");
 
                 return;
             }
-            if(!this.IsAuthenticated){
+            if (!this.IsAuthenticated)
+            {
                 WriteLine("-ERR Authentication required.");
 
                 return;
@@ -1035,16 +1152,19 @@ namespace LumiSoft.Net.POP3.Server
 
             string[] args = cmdText.Split(' ');
 
-            if(args.Length != 1 || !Net_Utils.IsInteger(args[0])){
+            if (args.Length != 1 || !Net_Utils.IsInteger(args[0]))
+            {
                 WriteLine("-ERR Error in arguments.");
 
                 return;
             }
 
             POP3_ServerMessage msg = null;
-            if(m_pMessages.TryGetValueAt(Convert.ToInt32(args[0]) - 1,out msg)){
+            if (m_pMessages.TryGetValueAt(Convert.ToInt32(args[0]) - 1, out msg))
+            {
                 // Block messages marked for deletion.
-                if(msg.IsMarkedForDeletion){
+                if (msg.IsMarkedForDeletion)
+                {
                     WriteLine("-ERR Invalid operation: Message marked for deletion.");
 
                     return;
@@ -1053,29 +1173,36 @@ namespace LumiSoft.Net.POP3.Server
                 POP3_e_GetMessageStream e = OnGetMessageStream(msg);
 
                 // User didn't provide us message stream, assume that message deleted(for example by IMAP during this POP3 session).
-                if(e.MessageStream == null){
+                if (e.MessageStream == null)
+                {
                     WriteLine("-ERR no such message.");
                 }
-                else{
-                    try{
+                else
+                {
+                    try
+                    {
                         WriteLine("+OK Start sending message.");
 
                         long countWritten = this.TcpStream.WritePeriodTerminated(e.MessageStream);
 
                         // Log.
-                        if(this.Server.Logger != null){
-                            this.Server.Logger.AddWrite(this.ID,this.AuthenticatedUserIdentity,countWritten,"Wrote message(" + countWritten + " bytes).",this.LocalEndPoint,this.RemoteEndPoint);
+                        if (this.Server.Logger != null)
+                        {
+                            this.Server.Logger.AddWrite(this.ID, this.AuthenticatedUserIdentity, countWritten, "Wrote message(" + countWritten + " bytes).", this.LocalEndPoint, this.RemoteEndPoint);
                         }
                     }
-                    finally{
+                    finally
+                    {
                         // Close message stream if CloseStream = true.
-                        if(e.CloseMessageStream){
+                        if (e.CloseMessageStream)
+                        {
                             e.MessageStream.Dispose();
                         }
-                    }                    
+                    }
                 }
             }
-            else{
+            else
+            {
                 WriteLine("-ERR no such message.");
             }
         }
@@ -1099,12 +1226,14 @@ namespace LumiSoft.Net.POP3.Server
 				    enters the UPDATE state.
 			*/
 
-            if(m_SessionRejected){
+            if (m_SessionRejected)
+            {
                 WriteLine("-ERR Bad sequence of commands: Session rejected.");
 
                 return;
             }
-            if(!this.IsAuthenticated){
+            if (!this.IsAuthenticated)
+            {
                 WriteLine("-ERR Authentication required.");
 
                 return;
@@ -1112,24 +1241,29 @@ namespace LumiSoft.Net.POP3.Server
 
             string[] args = cmdText.Split(' ');
 
-            if(args.Length != 1 || !Net_Utils.IsInteger(args[0])){
+            if (args.Length != 1 || !Net_Utils.IsInteger(args[0]))
+            {
                 WriteLine("-ERR Error in arguments.");
 
                 return;
             }
 
             POP3_ServerMessage msg = null;
-            if(m_pMessages.TryGetValueAt(Convert.ToInt32(args[0]) - 1,out msg)){  
-                if(!msg.IsMarkedForDeletion){
+            if (m_pMessages.TryGetValueAt(Convert.ToInt32(args[0]) - 1, out msg))
+            {
+                if (!msg.IsMarkedForDeletion)
+                {
                     msg.SetIsMarkedForDeletion(true);
 
                     WriteLine("+OK Message marked for deletion.");
                 }
-                else{
+                else
+                {
                     WriteLine("-ERR Message already marked for deletion.");
                 }
             }
-            else{
+            else
+            {
                 WriteLine("-ERR no such message.");
             }
         }
@@ -1146,12 +1280,14 @@ namespace LumiSoft.Net.POP3.Server
 				    positive response.
 			*/
 
-            if(m_SessionRejected){
+            if (m_SessionRejected)
+            {
                 WriteLine("-ERR Bad sequence of commands: Session rejected.");
 
                 return;
             }
-            if(!this.IsAuthenticated){
+            if (!this.IsAuthenticated)
+            {
                 WriteLine("-ERR Authentication required.");
 
                 return;
@@ -1173,19 +1309,22 @@ namespace LumiSoft.Net.POP3.Server
 				with a positive response.
 			*/
 
-            if(m_SessionRejected){
+            if (m_SessionRejected)
+            {
                 WriteLine("-ERR Bad sequence of commands: Session rejected.");
 
                 return;
             }
-            if(!this.IsAuthenticated){
+            if (!this.IsAuthenticated)
+            {
                 WriteLine("-ERR Authentication required.");
 
                 return;
             }
 
             // Unmark messages marked for deletion.
-            foreach(POP3_ServerMessage msg in m_pMessages){
+            foreach (POP3_ServerMessage msg in m_pMessages)
+            {
                 msg.SetIsMarkedForDeletion(false);
             }
 
@@ -1273,33 +1412,38 @@ namespace LumiSoft.Net.POP3.Server
 						S: .
 			*/
 
-            if(m_SessionRejected){
+            if (m_SessionRejected)
+            {
                 WriteLine("-ERR Bad sequence of commands: Session rejected.");
 
                 return;
             }
 
             StringBuilder capaResponse = new StringBuilder();
-			capaResponse.Append("+OK Capability list follows\r\n");
-			capaResponse.Append("PIPELINING\r\n");
-			capaResponse.Append("UIDL\r\n");
-			capaResponse.Append("TOP\r\n");
+            capaResponse.Append("+OK Capability list follows\r\n");
+            capaResponse.Append("PIPELINING\r\n");
+            capaResponse.Append("UIDL\r\n");
+            capaResponse.Append("TOP\r\n");
 
             StringBuilder sasl = new StringBuilder();
-            foreach(AUTH_SASL_ServerMechanism authMechanism in this.Authentications.Values){
-                if(!authMechanism.RequireSSL || (authMechanism.RequireSSL && this.IsSecureConnection)){
+            foreach (AUTH_SASL_ServerMechanism authMechanism in this.Authentications.Values)
+            {
+                if (!authMechanism.RequireSSL || (authMechanism.RequireSSL && this.IsSecureConnection))
+                {
                     sasl.Append(authMechanism.Name + " ");
                 }
             }
-            if(sasl.Length > 0){
+            if (sasl.Length > 0)
+            {
                 capaResponse.Append("SASL " + sasl.ToString().Trim() + "\r\n");
             }
 
-            if(!this.IsSecureConnection && this.Certificate != null){
+            if (!this.IsSecureConnection && this.Certificate != null)
+            {
                 capaResponse.Append("STLS\r\n");
             }
 
-			capaResponse.Append(".");
+            capaResponse.Append(".");
 
             WriteLine(capaResponse.ToString());
         }
@@ -1334,19 +1478,24 @@ namespace LumiSoft.Net.POP3.Server
 				and closes the TCP connection.
 			*/
 
-            try{                
-                if(this.IsAuthenticated){
+            try
+            {
+                if (this.IsAuthenticated)
+                {
                     // Delete messages marked for deletion.
-                    foreach(POP3_ServerMessage msg in m_pMessages){
-                        if(msg.IsMarkedForDeletion){
+                    foreach (POP3_ServerMessage msg in m_pMessages)
+                    {
+                        if (msg.IsMarkedForDeletion)
+                        {
                             OnDeleteMessage(msg);
                         }
                     }
                 }
 
-                WriteLine("+OK <" + Net_Utils.GetLocalHostName(this.LocalHostName) + "> Service closing transmission channel.");                
+                WriteLine("+OK <" + Net_Utils.GetLocalHostName(this.LocalHostName) + "> Service closing transmission channel.");
             }
-            catch{
+            catch
+            {
             }
             Disconnect();
             Dispose();
@@ -1363,15 +1512,17 @@ namespace LumiSoft.Net.POP3.Server
         /// <param name="line">Line to send.</param>
         private void WriteLine(string line)
         {
-            if(line == null){
+            if (line == null)
+            {
                 throw new ArgumentNullException("line");
             }
 
             int countWritten = this.TcpStream.WriteLine(line);
 
             // Log.
-            if(this.Server.Logger != null){
-                this.Server.Logger.AddWrite(this.ID,this.AuthenticatedUserIdentity,countWritten,line,this.LocalEndPoint,this.RemoteEndPoint);
+            if (this.Server.Logger != null)
+            {
+                this.Server.Logger.AddWrite(this.ID, this.AuthenticatedUserIdentity, countWritten, line, this.LocalEndPoint, this.RemoteEndPoint);
             }
         }
 
@@ -1386,13 +1537,15 @@ namespace LumiSoft.Net.POP3.Server
         /// <exception cref="ArgumentNullException">Is raised when <b>text</b> is null reference.</exception>
         public void LogAddText(string text)
         {
-            if(text == null){
+            if (text == null)
+            {
                 throw new ArgumentNullException("text");
             }
 
             // Log
-            if(this.Server.Logger != null){
-                this.Server.Logger.AddText(this.ID,text);
+            if (this.Server.Logger != null)
+            {
+                this.Server.Logger.AddText(this.ID, text);
             }
         }
 
@@ -1407,8 +1560,10 @@ namespace LumiSoft.Net.POP3.Server
         /// <exception cref="ObjectDisposedException">Is raised when this object is disposed and this property is accessed.</exception>
         public new POP3_Server Server
         {
-            get{
-                if(this.IsDisposed){
+            get
+            {
+                if (this.IsDisposed)
+                {
                     throw new ObjectDisposedException(this.GetType().Name);
                 }
 
@@ -1420,14 +1575,16 @@ namespace LumiSoft.Net.POP3.Server
         /// Gets supported SASL authentication methods collection.
         /// </summary>
         /// <exception cref="ObjectDisposedException">Is raised when this object is disposed and this property is accessed.</exception>
-        public Dictionary<string,AUTH_SASL_ServerMechanism> Authentications
+        public Dictionary<string, AUTH_SASL_ServerMechanism> Authentications
         {
-            get{
-                if(this.IsDisposed){
+            get
+            {
+                if (this.IsDisposed)
+                {
                     throw new ObjectDisposedException(this.GetType().Name);
                 }
 
-                return m_pAuthentications; 
+                return m_pAuthentications;
             }
         }
 
@@ -1437,12 +1594,14 @@ namespace LumiSoft.Net.POP3.Server
         /// <exception cref="ObjectDisposedException">Is raised when this object is disposed and this property is accessed.</exception>
         public int BadCommands
         {
-            get{ 
-                if(this.IsDisposed){
+            get
+            {
+                if (this.IsDisposed)
+                {
                     throw new ObjectDisposedException(this.GetType().Name);
                 }
 
-                return m_BadCommands; 
+                return m_BadCommands;
             }
         }
 
@@ -1452,13 +1611,15 @@ namespace LumiSoft.Net.POP3.Server
         /// <exception cref="ObjectDisposedException">Is raised when this object is disposed and this property is accessed.</exception>
         public override GenericIdentity AuthenticatedUserIdentity
         {
-	        get{
-                if(this.IsDisposed){
+            get
+            {
+                if (this.IsDisposed)
+                {
                     throw new ObjectDisposedException(this.GetType().Name);
                 }
 
-		        return m_pUser;
-	        }
+                return m_pUser;
+            }
         }
 
         #endregion
@@ -1481,8 +1642,9 @@ namespace LumiSoft.Net.POP3.Server
         {
             POP3_e_Started eArgs = new POP3_e_Started(reply);
 
-            if(this.Started != null){                
-                this.Started(this,eArgs);
+            if (this.Started != null)
+            {
+                this.Started(this, eArgs);
             }
 
             return eArgs;
@@ -1503,12 +1665,13 @@ namespace LumiSoft.Net.POP3.Server
         /// <param name="user">User name.</param>
         /// <param name="password">Password.</param>
         /// <returns>Returns event args.</returns>
-        private POP3_e_Authenticate OnAuthenticate(string user,string password)
+        private POP3_e_Authenticate OnAuthenticate(string user, string password)
         {
-            POP3_e_Authenticate eArgs = new POP3_e_Authenticate(user,password);
+            POP3_e_Authenticate eArgs = new POP3_e_Authenticate(user, password);
 
-            if(this.Authenticate != null){
-                this.Authenticate(this,eArgs);
+            if (this.Authenticate != null)
+            {
+                this.Authenticate(this, eArgs);
             }
 
             return eArgs;
@@ -1531,8 +1694,9 @@ namespace LumiSoft.Net.POP3.Server
         {
             POP3_e_GetMessagesInfo eArgs = new POP3_e_GetMessagesInfo();
 
-            if(this.GetMessagesInfo != null){
-                this.GetMessagesInfo(this,eArgs);
+            if (this.GetMessagesInfo != null)
+            {
+                this.GetMessagesInfo(this, eArgs);
             }
 
             return eArgs;
@@ -1553,12 +1717,13 @@ namespace LumiSoft.Net.POP3.Server
         /// <param name="message">Message which top data to get.</param>
         /// <param name="lines">Number of message-body lines to get.</param>
         /// <returns>Returns event args.</returns>
-        private POP3_e_GetTopOfMessage OnGetTopOfMessage(POP3_ServerMessage message,int lines)
+        private POP3_e_GetTopOfMessage OnGetTopOfMessage(POP3_ServerMessage message, int lines)
         {
-            POP3_e_GetTopOfMessage eArgs = new POP3_e_GetTopOfMessage(message,lines);
+            POP3_e_GetTopOfMessage eArgs = new POP3_e_GetTopOfMessage(message, lines);
 
-            if(this.GetTopOfMessage != null){
-                this.GetTopOfMessage(this,eArgs);
+            if (this.GetTopOfMessage != null)
+            {
+                this.GetTopOfMessage(this, eArgs);
             }
 
             return eArgs;
@@ -1582,8 +1747,9 @@ namespace LumiSoft.Net.POP3.Server
         {
             POP3_e_GetMessageStream eArgs = new POP3_e_GetMessageStream(message);
 
-            if(this.GetMessageStream != null){
-                this.GetMessageStream(this,eArgs);
+            if (this.GetMessageStream != null)
+            {
+                this.GetMessageStream(this, eArgs);
             }
 
             return eArgs;
@@ -1604,8 +1770,9 @@ namespace LumiSoft.Net.POP3.Server
         /// <param name="message">Message to delete.</param>
         private void OnDeleteMessage(POP3_ServerMessage message)
         {
-            if(this.DeleteMessage != null){
-                this.DeleteMessage(this,new POP3_e_DeleteMessage(message));
+            if (this.DeleteMessage != null)
+            {
+                this.DeleteMessage(this, new POP3_e_DeleteMessage(message));
             }
         }
 
@@ -1623,8 +1790,9 @@ namespace LumiSoft.Net.POP3.Server
         /// </summary>
         private void OnReset()
         {
-            if(this.Reset != null){
-                this.Reset(this,new EventArgs());
+            if (this.Reset != null)
+            {
+                this.Reset(this, new EventArgs());
             }
         }
 
